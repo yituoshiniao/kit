@@ -1,6 +1,6 @@
 module gitlab.intsig.net/cs-server2/kit
 
-go 1.16
+go 1.13
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
