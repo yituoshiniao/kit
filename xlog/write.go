@@ -1,11 +1,5 @@
 package xlog
 
-import (
-	"context"
-	"encoding/json"
-	"strings"
-)
-
 
 import (
 	"gitlab.intsig.net/cs-server2/kit/xtrace"
