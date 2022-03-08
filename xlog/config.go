@@ -18,21 +18,21 @@ import "go.uber.org/zap/zapcore"
 // Config serializes log related config in toml/json.
 type Config struct {
 	// 业务服务名称，如果多个业务日志在ELK中聚合，此字段就有用了
-	ServiceName string `yaml:"serviceName"`
+	ServiceName string `yaml:"serviceName" json:"serviceName"`
 	// 日志级别.
-	Level string `yaml:"level"`
+	Level string `yaml:"level" json:"level"`
 	// 日志级别字段开启颜色功能
-	LevelColor bool `yaml:"levelColor"`
+	LevelColor bool `yaml:"levelColor" json:"levelColor"`
 	// Log format. one of json or plain.
-	Format string `yaml:"format"`
+	Format string `yaml:"format" json:"format"`
 	// 是否输出到控制台.
-	Stdout bool `yaml:"stdout"`
+	Stdout bool `yaml:"stdout" json:"stdout"`
 	// File log config.
-	File FileLogConfig `yaml:"file"`
+	File FileLogConfig `yaml:"file" json:"file"`
 	// Sentry 的 DSN地址，如果配置了次参数，warn 级别以上的错误会发送sentry
-	SentryDSN string `yaml:"sentryDSN"`
+	SentryDSN string `yaml:"sentryDSN" json:"sentryDSN"`
 	//日志展示 行号配置
-	CallerKey string `yaml:"callerKey"`
+	CallerKey string `yaml:"callerKey" json:"callerKey"`
 
 
 
@@ -58,15 +58,15 @@ func (c *Config) level() zapcore.Level {
 // FileLogConfig serializes file log related config.
 type FileLogConfig struct {
 	// 日志文件路径.
-	Filename string `yaml:"filename"`
+	Filename string `yaml:"filename" json:"filename"`
 	// Is log rotate enabled.
-	LogRotate bool `yaml:"logRotate"`
+	LogRotate bool `yaml:"logRotate" json:"logRotate"`
 	// Max size for a single file, in MB.
-	MaxSize int `yaml:"maxSize"`
+	MaxSize int `yaml:"maxSize" json:"maxSize"`
 	// Max log keep days, default is never deleting.
-	MaxDays int `yaml:"maxDays"`
+	MaxDays int `yaml:"maxDays" json:"maxDays"`
 	// Maximum number of old log files to retain.
-	MaxBackups int `yaml:"maxBackups"`
+	MaxBackups int `yaml:"maxBackups" json:"maxBackups"`
 	// MAX size of bufio.Writer
-	BufSize int `yaml:"bufSize"`
+	BufSize int `yaml:"bufSize" json:"bufSize"`
 }
