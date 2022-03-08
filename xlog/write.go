@@ -8,7 +8,7 @@ import (
 
 
 import (
-	"gitlab.intsig.net/cs-server2/kit-test-cb/xtrace"
+	"gitlab.intsig.net/cs-server2/kit/xtrace"
 	"context"
 	"encoding/json"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"

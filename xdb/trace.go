@@ -1,8 +1,8 @@
 package xdb
 
 import (
-	"gitlab.intsig.net/cs-server2/kit-test-cb/xlog"
-	"gitlab.intsig.net/cs-server2/kit-test-cb/xtrace"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
+	"gitlab.intsig.net/cs-server2/kit/xtrace"
 	"context"
 	"database/sql/driver"
 	"fmt"

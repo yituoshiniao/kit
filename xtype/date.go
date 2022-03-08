@@ -2,7 +2,7 @@
 package xtype
 
 import (
-	"gitlab.intsig.net/cs-server2/kit-test-cb/xtime"
+	"gitlab.intsig.net/cs-server2/kit/xtime"
 	"database/sql/driver"
 	"encoding/json"
 	"github.com/pkg/errors"

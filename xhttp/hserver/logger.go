@@ -1,7 +1,7 @@
 package hserver
 
 import (
-	"gitlab.intsig.net/cs-server2/kit-test-cb/xlog"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"net/http"

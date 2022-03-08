@@ -1,7 +1,7 @@
 package hclient
 
 import (
-	"gitlab.intsig.net/cs-server2/kit-test-cb/xlog"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"context"
 	"fmt"
 	"github.com/dghubble/sling"

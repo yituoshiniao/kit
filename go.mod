@@ -1,4 +1,4 @@
-module gitlab.intsig.net/cs-server2/kit-test-cb
+module gitlab.intsig.net/cs-server2/kit
 
 go 1.16
 

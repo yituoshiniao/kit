@@ -1,7 +1,7 @@
 package hclient
 
 import (
-	"gitlab.intsig.net/cs-server2/kit-test-cb/xlog"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"github.com/dghubble/sling"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"

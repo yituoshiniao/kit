@@ -1,6 +1,6 @@
 package xslice
 
-import "gitlab.intsig.net/cs-server2/kit-test-cb/xtype"
+import "gitlab.intsig.net/cs-server2/kit/xtype"
 
 func Paged(list []interface{}, cursor int64, size int64) (outList []interface{}, outPager xtype.Pager) {
 	nextCursor := cursor + int64(size)

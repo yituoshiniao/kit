@@ -1,7 +1,7 @@
 package xdb
 
 import (
-	"gitlab.intsig.net/cs-server2/kit-test-cb/xlog"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"context"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"

@@ -1,7 +1,7 @@
 package hclient
 
 import (
-	"gitlab.intsig.net/cs-server2/kit-test-cb/xlog"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"bytes"
 	"github.com/dghubble/sling"
 	"go.uber.org/zap"
