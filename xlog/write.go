@@ -8,6 +8,8 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -45,7 +47,12 @@ func Ctx2(ctx context.Context) *zap.Logger {
 }
 
 func ExtFields(ctx context.Context) (fs []zap.Field) {
-	fs = append(fs, TraceIdField(ctx), BaggageFlowField(ctx))
+	fs = append(
+			fs,
+			TraceIdField(ctx),
+			BaggageFlowField(ctx),
+			GidField(),
+	)
 	return fs
 }
 
@@ -56,6 +63,20 @@ func TraceIdField(ctx context.Context) (f zap.Field) {
 	}
 	return zap.Skip()
 
+}
+
+//gid
+func GidField() (f zap.Field) {
+	var (
+		buf [64]byte
+		n   = runtime.Stack(buf[:], false)
+		stk = strings.TrimPrefix(string(buf[:n]), "goroutine ")
+	)
+	id, err := strconv.Atoi(strings.Fields(stk)[0])
+	if err != nil {
+		id = 0
+	}
+	return zap.Int64("gid", int64(id))
 }
 
 func BaggageFlowField(ctx context.Context) (f zap.Field) {

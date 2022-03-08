@@ -59,8 +59,11 @@ func (c *Config) level() zapcore.Level {
 type FileLogConfig struct {
 	// 日志文件路径.
 	Filename string `yaml:"filename" json:"filename"`
-	// Is log rotate enabled.
-	LogRotate bool `yaml:"logRotate" json:"logRotate"`
+
+	// 日志文件滚动切割的频率，@hourly 每小时，@daily 每天，默认为 @hourly.
+	LogRotate LogRotate `yaml:"logRotate" json:"logRotate"`
+	//// Is log rotate enabled.
+	//LogRotate bool `yaml:"logRotate" json:"logRotate"`
 	// Max size for a single file, in MB.
 	MaxSize int `yaml:"maxSize" json:"maxSize"`
 	// Max log keep days, default is never deleting.

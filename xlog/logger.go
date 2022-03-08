@@ -1,17 +1,28 @@
 package xlog
 
 import (
+	"context"
+	"github.com/robfig/cron/v3"
+	"gitlab.intsig.net/cs-server2/kit/xlog/rotate"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/getsentry/raven-go"
-	"github.com/natefinch/lumberjack"
 	"github.com/pkg/errors"
 	"github.com/tchap/zapext/zapsentry"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
+
+const (
+	// 日志文件按天切割
+	Day LogRotate = "@daily"
+	// 日志文件按小时切割
+	Hour LogRotate = "@hourly"
+)
+
+type LogRotate string
+
 
 func Set(conf Config) (func(), error) {
 	logger, err := New(conf)
@@ -145,19 +156,45 @@ func encoderFromFormat(format string, levelColor bool, callerKey string) zapcore
 	}
 }
 
+//func getRotatedSyncer(flc FileLogConfig) zapcore.WriteSyncer {
+//	writer := &lumberjack.Logger{
+//		Filename:   flc.Filename,   // 日志文件路径
+//		MaxSize:    flc.MaxSize,    // 每个日志文件保存的最大尺寸 单位：M
+//		MaxBackups: flc.MaxBackups, // 日志文件最多保存多少个备份
+//		MaxAge:     flc.MaxDays,    // 文件最多保存多少天
+//	}
+//	go func() {
+//		for {
+//			<-time.After(time.Hour)
+//			_ = writer.Rotate()
+//		}
+//	}()
+//
+//	return zapcore.AddSync(writer)
+//}
+
+
+
+
+
+
 func getRotatedSyncer(flc FileLogConfig) zapcore.WriteSyncer {
-	writer := &lumberjack.Logger{
-		Filename:   flc.Filename,   // 日志文件路径
-		MaxSize:    flc.MaxSize,    // 每个日志文件保存的最大尺寸 单位：M
-		MaxBackups: flc.MaxBackups, // 日志文件最多保存多少个备份
-		MaxAge:     flc.MaxDays,    // 文件最多保存多少天
+	writer := &rotate.Logger{
+		Filename:  flc.Filename, // 日志文件路径
+		LocalTime: true,
 	}
-	go func() {
-		for {
-			<-time.After(time.Hour)
-			_ = writer.Rotate()
-		}
-	}()
+
+	if flc.LogRotate == "" {
+		flc.LogRotate = Hour
+	}
+	c := cron.New()
+	_, err := c.AddFunc(string(flc.LogRotate), func() {
+		_ = writer.Rotate()
+	})
+	if err != nil {
+		L(context.Background()).Warn("添加日志滚动功能失败，请检查定时规则是否合法", zap.String("spec", string(flc.LogRotate)), zap.Error(err))
+	}
+	c.Start()
 
 	return zapcore.AddSync(writer)
 }
