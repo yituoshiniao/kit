@@ -3,6 +3,7 @@ package xdb
 import (
 	"database/sql/driver"
 	"github.com/pkg/errors"
+	"gitlab.intsig.net/cs-server2/kit/xslice"
 	"strconv"
 	"strings"
 )
