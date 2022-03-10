@@ -45,7 +45,7 @@ func New(conf Config) (*zap.Logger, error) {
 		tee = append(tee, warnCore)
 	}
 
-	logger := zap.New(zapcore.NewTee(tee...))
+	logger := zap.New(zapcore.NewTee(tee...), zap.AddCaller())
 
 	_, _ = zap.RedirectStdLogAt(logger, conf.level()) //替换标准库的日志输出
 
