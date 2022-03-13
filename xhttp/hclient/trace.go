@@ -1,10 +1,10 @@
 package hclient
 
 import (
-	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"github.com/dghubble/sling"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -14,7 +14,6 @@ type TraceDoer struct {
 }
 
 func (t TraceDoer) Do(req *http.Request) (resp *http.Response, err error) {
-	xlog.L(req.Context()).Info("t  TraceDoer")
 	parentSpan := opentracing.SpanFromContext(req.Context())
 	if parentSpan != nil {
 		span := opentracing.StartSpan(
@@ -27,7 +26,7 @@ func (t TraceDoer) Do(req *http.Request) (resp *http.Response, err error) {
 
 		ext.HTTPUrl.Set(span, req.URL.String())
 		ext.HTTPMethod.Set(span, req.Method)
-		ext.SpanKind.Set(span, "client")
+		//ext.SpanKind.Set(span, "client")
 		ext.SpanKindRPCClient.Set(span)
 
 
@@ -43,6 +42,7 @@ func (t TraceDoer) Do(req *http.Request) (resp *http.Response, err error) {
 			opentracing.HTTPHeadersCarrier(req.Header))
 
 		if err != nil {
+			zap.L().Error("OpenTracing Inject Err", zap.String("err", err.Error()))
 			return nil, err
 		}
 

@@ -2,6 +2,7 @@ package xrds
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -18,6 +19,7 @@ func Trace(ctx context.Context, client *redis.Client) *redis.Client {
 	parentSpan := opentracing.SpanFromContext(ctx)
 	if parentSpan == nil {
 		xlog.S(ctx).Debugw("parentSpan nil","111", 222)
+
 		//return client
 	}
 
@@ -73,7 +75,7 @@ func cmdsName(cmds []redis.Cmder) string {
 func startSpan(ctx context.Context, parentSpan opentracing.Span, opts *redis.Options, operationName, method string) (opentracing.Span, context.Context) {
 	//tr := parentSpan.Tracer()
 	//sp := tr.StartSpan(operationName, opentracing.ChildOf(parentSpan.Context()))
-	sp, tmpCtx := opentracing.StartSpanFromContext(ctx, operationName+method)
+	sp, tmpCtx := opentracing.StartSpanFromContext(ctx, fmt.Sprintf("%s-%s", operationName, method))
 	ext.DBType.Set(sp, "redis")
 	ext.PeerAddress.Set(sp, opts.Addr)
 	ext.DBInstance.Set(sp, strconv.Itoa(opts.DB))

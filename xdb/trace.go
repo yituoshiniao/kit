@@ -91,7 +91,16 @@ func (c *callbacks) before(scope *gorm.Scope) {
 	parentSpan := val.(opentracing.Span)
 	tr := parentSpan.Tracer()
 	sp := tr.StartSpan("mysql", opentracing.ChildOf(parentSpan.Context()))
-	ext.DBType.Set(sp, "sql")
+	//ext.DBType.Set(sp, "sql")
+
+	val, ok = scope.Get(ctxKey)
+	if ok {
+		ctx := val.(context.Context)
+		xlog.L(ctx).Check(zap.DebugLevel, "DB Exec").Write(
+			zap.String("Start", "Sql"),
+		)
+	}
+
 	scope.Set(spanKey, sp)
 }
 

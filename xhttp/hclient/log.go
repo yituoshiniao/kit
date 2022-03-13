@@ -17,9 +17,6 @@ type LogDoer struct {
 }
 
 func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
-
-	xlog.L(req.Context()).Info("l  LogDoer")
-
 	startTime := time.Now()
 	var reqBody []byte
 	var respBody []byte
@@ -38,7 +35,7 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 		reqFs = append(reqFs, zap.Object("req", &jsonMarshaler{b: reqBody}))
 	}
 
-	zap.L().Info("发送请求[http.client]", reqFs...)
+	zap.L().Debug("发送请求[http.client]", reqFs...)
 
 	resp, err = l.doer.Do(req)
 
@@ -51,7 +48,7 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 		}
 	}
 
-	level := zap.InfoLevel
+	level := zap.DebugLevel
 	if err != nil || (resp != nil && (resp.StatusCode < 200 || 299 < resp.StatusCode)) {
 		level = zap.ErrorLevel
 	}
