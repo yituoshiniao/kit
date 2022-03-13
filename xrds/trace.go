@@ -18,9 +18,8 @@ func Trace(ctx context.Context, client *redis.Client) *redis.Client {
 	}
 	parentSpan := opentracing.SpanFromContext(ctx)
 	if parentSpan == nil {
-		xlog.S(ctx).Debugw("parentSpan nil","111", 222)
-
-		//return client
+		xlog.S(ctx).Debugw("parentSpan err","err", "parentSpan nil")
+		return client
 	}
 
 
