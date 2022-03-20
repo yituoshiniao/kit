@@ -85,3 +85,12 @@ func WithSubTraceId(ctx context.Context) context.Context {
 
 	return metadata.NewIncomingContext(ctx, md)
 }
+
+//获取ctx中的traceID
+func GetTraceID(ctx context.Context) (traceID string) {
+	span := opentracing.SpanFromContext(ctx)
+	if span != nil {
+		traceID = span.Context().(jaeger.SpanContext).TraceID().String()
+	}
+	return traceID
+}

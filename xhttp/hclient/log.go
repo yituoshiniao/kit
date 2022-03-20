@@ -1,13 +1,14 @@
 package hclient
 
 import (
-	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"bytes"
 	"github.com/dghubble/sling"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -15,6 +16,11 @@ type LogDoer struct {
 	doer         sling.Doer
 	durationFunc DurationToField
 }
+
+const (
+	HeaderJSON      = "json"
+	ContentTypeJson = "Content-Type"
+)
 
 func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	startTime := time.Now()
@@ -67,12 +73,13 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 
 	}
 
-	if resp != nil && (200 <= resp.StatusCode && resp.StatusCode <= 299) {
+	if resp != nil && (200 <= resp.StatusCode && resp.StatusCode <= 299) &&
+		strings.Contains(resp.Header.Get(ContentTypeJson), HeaderJSON) {
 		respF = zap.Object("resp", &jsonMarshaler{b: respBody})
 	} else {
-		respF = zap.Object("resp", &jsonMarshaler{b: respBody})
+		//respF = zap.Object("resp", &jsonMarshaler{b: respBody})
 		//错误响应处理
-		//respF = zap.ByteString("resp", respBody)
+		respF = zap.ByteString("resp", respBody)
 	}
 
 	respFs := xlog.ExtFields(req.Context())
@@ -81,6 +88,7 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 		statusF,
 		statusCodeF,
 		contentLengthF,
+		zap.Reflect("header", resp.Header),
 		l.durationFunc(time.Since(startTime)),
 		respF,
 		path,
