@@ -10,6 +10,7 @@ require (
 	github.com/dghubble/sling v1.4.0
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/getsentry/raven-go v0.2.0
+	github.com/getsentry/sentry-go v0.13.0 // indirect
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0

@@ -2,16 +2,15 @@ package xlog
 
 import (
 	"context"
-	"github.com/robfig/cron/v3"
-	"gitlab.intsig.net/cs-server2/kit/xlog/rotate"
-	"os"
-	"path/filepath"
-
 	"github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
+	"github.com/robfig/cron/v3"
 	"github.com/tchap/zapext/zapsentry"
+	"gitlab.intsig.net/cs-server2/kit/xlog/rotate"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
+	"path/filepath"
 )
 
 const (
@@ -22,7 +21,6 @@ const (
 )
 
 type LogRotate string
-
 
 func Set(conf Config) (func(), error) {
 	logger, err := New(conf)
@@ -61,8 +59,8 @@ func New(conf Config) (*zap.Logger, error) {
 	logger = logger.Named(conf.ServiceName)
 	//替换全局logger
 	zap.ReplaceGlobals(logger)
-	if err = recordPanic(conf.File.Filename, conf.Stdout); err != nil {
-		//S(context.Background()).Warn(err)
+	if err = recordPanic(conf.File.Filename); err != nil {
+		S(context.Background()).Warnw("recordPanic错误", "err", err)
 		return nil, err
 	}
 
@@ -88,8 +86,8 @@ func getBaseCore(conf Config) zapcore.Core {
 
 	return zapcore.NewCore(
 		encoderFromFormat(conf.Format, conf.LevelColor, conf.CallerKey), // 编码器配置
-		zapcore.NewMultiWriteSyncer(syncers...),         // 增加同步器
-		zap.NewAtomicLevelAt(conf.level()),              // 日志级别
+		zapcore.NewMultiWriteSyncer(syncers...),                         // 增加同步器
+		zap.NewAtomicLevelAt(conf.level()),                              // 日志级别
 
 	)
 }
@@ -172,11 +170,6 @@ func encoderFromFormat(format string, levelColor bool, callerKey string) zapcore
 //
 //	return zapcore.AddSync(writer)
 //}
-
-
-
-
-
 
 func getRotatedSyncer(flc FileLogConfig) zapcore.WriteSyncer {
 	writer := &rotate.Logger{

@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package xlog
@@ -13,7 +14,7 @@ const panicFileName = "/panic.log"
 
 // 系统发生panic即会输出到panic文件（recover的panic也会输出）
 // windows系统暂时只会创建panic
-func recordPanic(logPath string, stdout bool) error {
+func recordPanic(logPath string) error {
 	if logPath == "" {
 		return nil
 	}
@@ -27,8 +28,5 @@ func recordPanic(logPath string, stdout bool) error {
 		return errors.Wrap(err, "创建panic.log失败")
 	}
 
-	if stdout {
-		return nil //错误输出到控制台
-	}
 	return errors.WithStack(syscall.Dup2(int(f.Fd()), int(os.Stderr.Fd())))
 }
