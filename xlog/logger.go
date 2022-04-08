@@ -139,7 +139,10 @@ func getSentryCore(sentryDSN string) (*zapsentry.Core, error) {
 
 func encoderFromFormat(format string, levelColor bool, callerKey string) zapcore.Encoder {
 	ec := zap.NewProductionEncoderConfig()
-	ec.EncodeTime = zapcore.ISO8601TimeEncoder
+	//ec.EncodeTime = zapcore.ISO8601TimeEncoder
+	ec.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05.000")
+	ec.TimeKey = "time"
+
 	if callerKey != "" {
 		ec.CallerKey = callerKey //显示日志行号
 	}

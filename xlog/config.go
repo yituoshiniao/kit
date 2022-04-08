@@ -34,7 +34,7 @@ type Config struct {
 	//日志展示 行号配置
 	CallerKey string `yaml:"callerKey" json:"callerKey"`
 
-
+	TimeKey string `yaml:"timeKey" json:"timeKey"`
 
 	// 日志文件路径.
 	FileName string `yaml:"filename"`
