@@ -1,4 +1,4 @@
-package xdb
+package v1
 
 import (
 	"database/sql/driver"

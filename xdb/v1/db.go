@@ -1,6 +1,6 @@
 //go:generate msgp -tests=false
 //msgp:ignore Dao
-package xdb
+package v1
 
 import (
 	"context"
@@ -102,4 +102,3 @@ func BulkCreate(db *gorm.DB, objects []interface{}, chunkSize int, excludeColumn
 	err := gormbulk.BulkInsert(db, objects, chunkSize, excludeColumns...)
 	return errors.WithStack(err)
 }
-

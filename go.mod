@@ -33,4 +33,5 @@ require (
 	google.golang.org/grpc v1.44.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v2 v2.4.0
+	gorm.io/gorm v1.23.4 // indirect
 )

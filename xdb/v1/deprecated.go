@@ -1,6 +1,6 @@
 //go:generate msgp -tests=false
 //msgp:ignore Repository
-package xdb
+package v1
 
 // Deprecated
 // 请使用 xdb.Model

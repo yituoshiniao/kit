@@ -1,8 +1,6 @@
-package xdb
+package v1
 
 import (
-	"gitlab.intsig.net/cs-server2/kit/xlog"
-	"gitlab.intsig.net/cs-server2/kit/xtrace"
 	"context"
 	"database/sql/driver"
 	"fmt"
@@ -11,6 +9,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
+	"gitlab.intsig.net/cs-server2/kit/xtrace"
 	"go.uber.org/zap"
 	"reflect"
 	"strings"

@@ -1,10 +1,10 @@
-package xdb
+package v1
 
 import (
-	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"context"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 )
 
 func Begin(ctx context.Context, db *gorm.DB) (tx *gorm.DB, err error) {

@@ -1,4 +1,4 @@
-package xdb
+package v1
 
 // Deprecated
 // 兼容旧版本，新版本使用 Config 结构体
