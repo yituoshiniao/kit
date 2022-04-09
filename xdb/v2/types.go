@@ -1,4 +1,4 @@
-package gormopentracing
+package v2
 
 // operationName defines a type to wrap the name of each operation name.
 type operationName string
@@ -9,12 +9,12 @@ func (op operationName) String() string {
 }
 
 const (
-	_createOp operationName = "create"
-	_updateOp operationName = "update"
-	_queryOp  operationName = "query"
-	_deleteOp operationName = "delete"
-	_rowOp    operationName = "row"
-	_rawOp    operationName = "raw"
+	_createOp operationName = "mysql.create"
+	_updateOp operationName = "mysql.update"
+	_queryOp  operationName = "mysql.query"
+	_deleteOp operationName = "mysql.delete"
+	_rowOp    operationName = "mysql.row"
+	_rawOp    operationName = "mysql.raw"
 )
 
 // operationStage indicates the timing when the operation happens.

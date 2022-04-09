@@ -1,4 +1,4 @@
-package gormopentracing
+package v2
 
 import "gorm.io/gorm"
 

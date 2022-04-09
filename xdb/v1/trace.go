@@ -144,10 +144,12 @@ func (c *callbacks) after(scope *gorm.Scope, operation string) {
 			ext.Error.Set(sp, false)
 		}
 		ext.DBType.Set(sp, "sql")
-		ext.DBStatement.Set(sp, scope.SQL)
+		//ext.DBStatement.Set(sp, scope.SQL)
+		//sp.SetTag("db.vars", sqlVars)
+		sp.LogKV("db.sql", scope.SQL)
+		sp.LogKV("db.vars", sqlVars)
 		sp.SetTag("db.op", operation)
 		sp.SetTag("db.count", scope.DB().RowsAffected)
-		sp.SetTag("db.vars", sqlVars)
 		sp.Finish()
 	}
 

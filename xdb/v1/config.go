@@ -10,4 +10,8 @@ type Config struct {
 	MaxOpen     int    `yaml:"maxOpen"`
 	MaxLifetime int    `yaml:"maxLifetime"`
 	LogMode     bool   `yaml:"logMode"`
+
+	DBName          string `yaml:"dbName"`
+	PushAddr        string `yaml:"pushAddr"`
+	RefreshInterval int    `yaml:"refreshInterval"`
 }
