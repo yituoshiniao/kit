@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	v1 "gitlab.intsig.net/cs-server2/kit/xdb/v1"
 	"gorm.io/driver/mysql"
@@ -12,15 +11,15 @@ import (
 	"time"
 )
 
-func NewDb(conf v1.Config, tracer opentracing.Tracer) (db *gorm.DB, fn func()) {
+func NewDb(conf v1.Config) (db *gorm.DB, fn func()) {
 	//dsn := fmt.Sprintf(
 	//	"%s:%s@(%s)/%s?charset=%s&parseTime=%t&loc=%s&multiStatements=%t&timeout=%ds",
 	//)
 	// 参考 https://github.com/go-sql-driver/mysql#dsn-data-source-name 获取详情
 	var err error
 	db, err = gorm.Open(mysql.Open(conf.Dsn), &gorm.Config{
-		Logger: glogger.Discard,
-		//SkipDefaultTransaction: false,
+		Logger:                 glogger.Discard,
+		SkipDefaultTransaction: true,
 	})
 	if err != nil {
 		panic(err)
@@ -33,9 +32,7 @@ func NewDb(conf v1.Config, tracer opentracing.Tracer) (db *gorm.DB, fn func()) {
 
 	err = db.Use(
 		New(
-			WithTracer(nil),         //链路追踪
-			WithLogResult(true),     // 是否记录查询结果
-			WithSqlParameters(true), // sql 参数绑定解析
+			WithSqlParameters(true),
 		),
 	)
 

@@ -11,6 +11,7 @@ type Config struct {
 	MaxLifetime int    `yaml:"maxLifetime"`
 	LogMode     bool   `yaml:"logMode"`
 
+	//普罗米修斯监控配置
 	DBName          string `yaml:"dbName"`
 	PushAddr        string `yaml:"pushAddr"`
 	RefreshInterval int    `yaml:"refreshInterval"`
