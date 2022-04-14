@@ -1,8 +1,10 @@
 package v2
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	v1 "gitlab.intsig.net/cs-server2/kit/xdb/v1"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"gorm.io/driver/mysql"
 	_ "gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -22,11 +24,13 @@ func NewDb(conf v1.Config) (db *gorm.DB, fn func()) {
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
+		xlog.S(context.Background()).Errorw("数据库连接错误", "err", err)
 		panic(err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
+		xlog.S(context.Background()).Errorw("数据库错误sqlDB", "err", err)
 		panic(err)
 	}
 

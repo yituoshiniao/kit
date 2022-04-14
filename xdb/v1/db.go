@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	gormbulk "github.com/t-tiger/gorm-bulk-insert/v2"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"time"
 )
 
@@ -20,6 +21,7 @@ func Open(mysql Mysql) (*gorm.DB, func()) {
 
 func New(conf Config) (*gorm.DB, func()) {
 	if db, err := gorm.Open("mysql", conf.Dsn); err != nil {
+		xlog.S(context.Background()).Errorw("数据库连接错误", "err", err)
 		panic(errors.WithStack(err))
 	} else {
 		db.LogMode(conf.LogMode)
