@@ -36,7 +36,7 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	}
 
 	reqFs := xlog.ExtFields(req.Context())
-	reqFs = append(reqFs, zap.String("method", req.Method), zap.String("url", req.URL.String()))
+	reqFs = append(reqFs, zap.String("method", req.Method), zap.String("url", req.URL.String()), zap.Reflect("header", req.Header))
 	if len(reqBody) > 0 && !xlog.IsSecrecyMsg(string(reqBody)) {
 		reqFs = append(reqFs, zap.Object("req", &jsonMarshaler{b: reqBody}))
 	}
@@ -73,8 +73,7 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 
 	}
 
-	if resp != nil && (200 <= resp.StatusCode && resp.StatusCode <= 299) &&
-		strings.Contains(resp.Header.Get(ContentTypeJson), HeaderJSON) {
+	if resp != nil && strings.Contains(resp.Header.Get(ContentTypeJson), HeaderJSON) {
 		respF = zap.Object("resp", &jsonMarshaler{b: respBody})
 	} else {
 		//respF = zap.Object("resp", &jsonMarshaler{b: respBody})

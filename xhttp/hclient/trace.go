@@ -1,9 +1,12 @@
 package hclient
 
 import (
+	"fmt"
 	"github.com/dghubble/sling"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	opentracinglog "github.com/opentracing/opentracing-go/log"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -29,9 +32,7 @@ func (t TraceDoer) Do(req *http.Request) (resp *http.Response, err error) {
 		//ext.SpanKind.Set(span, "client")
 		ext.SpanKindRPCClient.Set(span)
 
-
 		defer span.Finish()
-
 
 		//注入日志追踪信息
 		// Transmit the span's TraceContext as HTTP headers on our
@@ -51,13 +52,16 @@ func (t TraceDoer) Do(req *http.Request) (resp *http.Response, err error) {
 		if resp != nil {
 			ext.HTTPStatusCode.Set(span, uint16(resp.StatusCode))
 		}
-
 		if err != nil {
 			ext.Error.Set(span, true)
-			span.SetTag("error.msg", err.Error())
-			return nil, err
+			span.LogFields(opentracinglog.String("error", err.Error()))
 		}
-
+		if resp != nil && (resp.StatusCode < 200 || resp.StatusCode > 299) {
+			ext.Error.Set(span, true)
+			tmpErr := errors.New(fmt.Sprintf("http code错误码: %d", resp.StatusCode))
+			//span.LogKV("error", resp) //log 字段 可记录更多日志，tag 字段长度限制
+			span.LogFields(opentracinglog.String("error", tmpErr.Error()))
+		}
 	} else {
 		resp, err = t.doer.Do(req)
 	}
