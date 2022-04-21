@@ -78,7 +78,13 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	} else {
 		//respF = zap.Object("resp", &jsonMarshaler{b: respBody})
 		//错误响应处理
-		respF = zap.ByteString("resp", respBody)
+		//respF = zap.ByteString("resp", respBody)
+
+		if isExcludeRoutePath(req.URL.Path, excludeRoutePath) {
+			respF = zap.Int("respLen", len(respBody))
+		} else {
+			respF = zap.ByteString("resp", respBody)
+		}
 	}
 
 	respFs := xlog.ExtFields(req.Context())
@@ -96,6 +102,24 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	zap.L().Check(level, "接收响应[http.client]").Write(respFs...)
 
 	return
+}
+
+var (
+	excludeRoutePath []string = []string{
+		"/file/public/download",
+	}
+)
+
+func isExcludeRoutePath(path string, excludeRoutePath []string) bool {
+	if path == "" {
+		return false
+	}
+	for _, v := range excludeRoutePath {
+		if v == path {
+			return true
+		}
+	}
+	return false
 }
 
 type jsonMarshaler struct {
