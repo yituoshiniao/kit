@@ -1,11 +1,10 @@
 package xlog
 
-
 import (
-	"gitlab.intsig.net/cs-server2/kit/xtrace"
 	"context"
 	"encoding/json"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
+	"gitlab.intsig.net/cs-server2/kit/xtrace"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"runtime"
@@ -13,18 +12,25 @@ import (
 	"strings"
 )
 
+const (
+	//LogField 日志字段, clickhouse 统一日志字段; 前面我们记录的日志都是一层结构，没有嵌套的层级。
+	LogField = "log"
+	//MethodPath 请求方法
+	MethodPath = "method_path"
+	//TimeMs 请求时间 单位毫秒
+	TimeMs = "time_ms"
+)
 
 //兼容以前老格式--不带ctx 没有trace-id日志追踪信息
-func Info(args ...interface{})  {
+func Info(args ...interface{}) {
 	sugaredLogger := zap.L().Sugar()
 	sugaredLogger.Info(args)
 }
 
-func Error(args ...interface{})  {
+func Error(args ...interface{}) {
 	sugaredLogger := zap.L().Sugar()
 	sugaredLogger.Info(args)
 }
-
 
 func S(ctx context.Context) *zap.SugaredLogger {
 	return zap.L().With(ExtFields(ctx)...).Sugar()
@@ -48,10 +54,31 @@ func Ctx2(ctx context.Context) *zap.Logger {
 
 func ExtFields(ctx context.Context) (fs []zap.Field) {
 	fs = append(
-			fs,
-			TraceIdField(ctx),
-			BaggageFlowField(ctx),
-			GidField(),
+		fs,
+		TraceIdField(ctx),
+		BaggageFlowField(ctx),
+		GidField(),
+		zap.Namespace(LogField),
+	)
+	return fs
+}
+
+//Sn 未默认加载 zap.Namespace(LogField),
+func Sn(ctx context.Context) *zap.SugaredLogger {
+	return zap.L().With(ExtFieldsNotNamespace(ctx)...).Sugar()
+}
+
+//Ln 未默认加载 zap.Namespace(LogField),
+func Ln(ctx context.Context) *zap.Logger {
+	return zap.L().With(ExtFieldsNotNamespace(ctx)...)
+}
+
+func ExtFieldsNotNamespace(ctx context.Context) (fs []zap.Field) {
+	fs = append(
+		fs,
+		TraceIdField(ctx),
+		BaggageFlowField(ctx),
+		GidField(),
 	)
 	return fs
 }
