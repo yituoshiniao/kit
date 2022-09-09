@@ -13,42 +13,19 @@ import (
 )
 
 const (
-	//LogField 日志字段, clickhouse 统一日志字段; 前面我们记录的日志都是一层结构，没有嵌套的层级。
-	LogField = "log"
+	//LogField 日志字段
+	LogField = "xlog"
 	//MethodPath 请求方法
 	MethodPath = "method_path"
 	//TimeMs 请求时间 单位毫秒
 	TimeMs = "time_ms"
 )
 
-//兼容以前老格式--不带ctx 没有trace-id日志追踪信息
-func Info(args ...interface{}) {
-	sugaredLogger := zap.L().Sugar()
-	sugaredLogger.Info(args)
-}
-
-func Error(args ...interface{}) {
-	sugaredLogger := zap.L().Sugar()
-	sugaredLogger.Info(args)
-}
-
 func S(ctx context.Context) *zap.SugaredLogger {
 	return zap.L().With(ExtFields(ctx)...).Sugar()
 }
 
 func L(ctx context.Context) *zap.Logger {
-	return zap.L().With(ExtFields(ctx)...)
-}
-
-// Deprecated
-// 请使用 xlog.S() ,通过 ctx获取 taceId
-func Ctx(ctx context.Context) *zap.SugaredLogger {
-	return zap.L().With(ExtFields(ctx)...).Sugar()
-}
-
-// Deprecated
-// 请使用 xlog.L()
-func Ctx2(ctx context.Context) *zap.Logger {
 	return zap.L().With(ExtFields(ctx)...)
 }
 
@@ -83,7 +60,7 @@ func ExtFieldsNotNamespace(ctx context.Context) (fs []zap.Field) {
 	return fs
 }
 
-//写入 taceId 到日志组件中
+//TraceIdField 写入 taceId 到日志组件中
 func TraceIdField(ctx context.Context) (f zap.Field) {
 	if id := xtrace.TraceIdFromContext(ctx); id != "" {
 		return zap.String("traceId", xtrace.TraceIdFromContext(ctx))
@@ -92,7 +69,7 @@ func TraceIdField(ctx context.Context) (f zap.Field) {
 
 }
 
-//gid
+//GidField ...
 func GidField() (f zap.Field) {
 	var (
 		buf [64]byte
