@@ -16,9 +16,9 @@ const (
 	//LogField 日志字段
 	LogField = "xlog"
 	//MethodPath 请求方法
-	MethodPath = "method_path"
+	MethodPath = "methodPath"
 	//TimeMs 请求时间 单位毫秒
-	TimeMs = "time_ms"
+	TimeMs = "timeMs"
 )
 
 func S(ctx context.Context) *zap.SugaredLogger {
