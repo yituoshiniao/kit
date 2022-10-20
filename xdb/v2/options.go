@@ -33,6 +33,9 @@ type options struct {
 
 	// rawOpName defines operation name for "raw" span
 	rawOpName operationName
+
+	//是否记录 度量指标
+	metrics bool
 }
 
 func defaultOption() *options {
@@ -143,5 +146,11 @@ func WithRawOpName(name operationName) ApplyOption {
 		}
 
 		o.rawOpName = name
+	}
+}
+
+func WithMetrics(isMetrics bool) ApplyOption {
+	return func(o *options) {
+		o.metrics = isMetrics
 	}
 }

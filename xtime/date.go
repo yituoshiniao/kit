@@ -3,9 +3,14 @@ package xtime
 import "time"
 
 const (
-	Fmt   = "2006-01-02 15:04:05"
-	Day   = 24 * time.Hour
-	Month = 30 * Day
+	Fmt      = "2006-01-02 15:04:05"
+	YmdFmt   = "2006-01-02"
+	YFmt     = "2006"
+	MonthFmt = "01"
+	DayFmt   = "02"
+	HisFmt   = "15:04:05"
+	Day      = 24 * time.Hour
+	Month    = 30 * Day
 )
 
 func SameYear(date1, date2 time.Time) bool {

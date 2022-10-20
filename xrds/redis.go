@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var MetricsEnable bool
+
 func recordMetrics(conf Config, rds *redis.Client) {
 	maxSize := promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "redis_pool_max_size",
@@ -92,6 +94,7 @@ func Open(conf Config) *redis.Client {
 		PoolSize:   conf.PoolSize,
 	})
 
+	MetricsEnable = conf.MetricsEnable
 	recordMetrics(conf, rds)
 	return rds
 }

@@ -13,7 +13,28 @@ import (
 	"time"
 )
 
-func NewDb(conf v1.Config) (db *gorm.DB, fn func()) {
+var defaultDbOptions = dbOptions{
+	isMetrics: false,
+}
+
+type dbOptions struct {
+	isMetrics bool
+}
+
+type DbOption func(*dbOptions)
+
+func WithDBMetrics(isMetrics bool) DbOption {
+	return func(o *dbOptions) {
+		o.isMetrics = isMetrics
+	}
+}
+
+func NewDb(conf v1.Config, opts ...DbOption) (db *gorm.DB, fn func()) {
+	o := &defaultDbOptions
+	for _, opt := range opts {
+		opt(o)
+	}
+
 	//dsn := fmt.Sprintf(
 	//	"%s:%s@(%s)/%s?charset=%s&parseTime=%t&loc=%s&multiStatements=%t&timeout=%ds",
 	//)
@@ -37,6 +58,7 @@ func NewDb(conf v1.Config) (db *gorm.DB, fn func()) {
 	err = db.Use(
 		New(
 			WithSqlParameters(true),
+			WithMetrics(o.isMetrics),
 		),
 	)
 

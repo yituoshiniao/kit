@@ -10,11 +10,11 @@ require (
 	github.com/dghubble/sling v1.4.0
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/getsentry/raven-go v0.2.0
-	github.com/getsentry/sentry-go v0.13.0 // indirect
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jinzhu/gorm v1.9.16
+	github.com/json-iterator/go v1.1.12
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.18.1 // indirect
@@ -30,10 +30,11 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/urfave/negroni v1.0.0
 	go.uber.org/zap v1.21.0
+	golang.org/x/net v0.0.0-20211008194852-3b03d305991f
+	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/grpc v1.44.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v2 v2.4.0
-	gorm.io/driver/mysql v1.3.3 // indirect
-	gorm.io/gorm v1.23.4 // indirect
-	gorm.io/plugin/prometheus v0.0.0-20220223061010-d8bdd50fdfc7 // indirect
+	gorm.io/driver/mysql v1.3.3
+	gorm.io/gorm v1.23.4
 )

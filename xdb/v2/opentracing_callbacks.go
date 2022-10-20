@@ -8,6 +8,11 @@ func (p opentracingPlugin) beforeCreate(db *gorm.DB) {
 
 func (p opentracingPlugin) after(db *gorm.DB) {
 	p.extractAfter(db)
+	//添加度量监控
+	if p.opt.metrics {
+		p.metricsAfter(db)
+	}
+
 }
 
 func (p opentracingPlugin) beforeUpdate(db *gorm.DB) {

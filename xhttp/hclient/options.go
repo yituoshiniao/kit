@@ -33,6 +33,7 @@ type options struct {
 	durationFunc    DurationToField
 	tlsConfig       *tls.Config
 	transport       http.RoundTripper
+	metrics         bool
 }
 
 func WithTarget(target string) Option {
@@ -76,6 +77,13 @@ func WithServiceName(serviceName string) Option {
 func WithInsecure() Option {
 	return func(o *options) {
 		o.tlsConfig.InsecureSkipVerify = true
+	}
+}
+
+//WithMetrics 是否采集接口请求
+func WithMetrics(isMetrics bool) Option {
+	return func(o *options) {
+		o.metrics = isMetrics
 	}
 }
 

@@ -52,9 +52,33 @@ func (p opentracingPlugin) injectBefore(db *gorm.DB, op operationName) {
 	db.InstanceSet(ctxKey, ctx)
 }
 
+func (p opentracingPlugin) metricsAfter(db *gorm.DB) {
+	//错误统计
+	if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
+		go func() {
+			DBErrCounter.With(
+				DBTable, db.Statement.Table,
+				DBOperation, strings.ToUpper(strings.Split(db.Statement.SQL.String(), " ")[0]),
+				DBErrMsg, db.Error.Error(),
+				DBSQL, db.Statement.SQL.String(),
+			).Add(1)
+		}()
+	}
+
+	//操作统计
+	go func() {
+		DBAPICounter.With(
+			DBTable, db.Statement.Table,
+			DBOperation, strings.ToUpper(strings.Split(db.Statement.SQL.String(), " ")[0]),
+		).Add(1)
+	}()
+
+}
+
 func (p opentracingPlugin) extractAfter(db *gorm.DB) {
 	// make sure context could be used
 	if db == nil {
+		xlog.S(context.TODO()).Debug("DB is nil 错误")
 		return
 	}
 	if db.Statement == nil || db.Statement.Context == nil {
@@ -67,10 +91,9 @@ func (p opentracingPlugin) extractAfter(db *gorm.DB) {
 	if okCtx {
 		ctx := v.(context.Context)
 		// log error
-		if err := db.Error; err != nil {
-			xlog.S(ctx).Errorw("gorm 错误信息", "err", err)
+		if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
+			xlog.S(ctx).Errorw("gorm 错误信息", "err", db.Error)
 		}
-
 		xlog.L(ctx).Info("[Gorm]:Exec", appendLogSql(db, p.opt.logResult, p.opt.logSqlParameters)...)
 	}
 
@@ -78,11 +101,13 @@ func (p opentracingPlugin) extractAfter(db *gorm.DB) {
 	//sp := opentracing.SpanFromContext(db.Statement.Context)
 	v, ok := db.InstanceGet(opentracingSpanKey)
 	if !ok || v == nil {
+		xlog.S(context.TODO()).Debug("InstanceGet opentracingSpanKey 错误")
 		return
 	}
 
 	sp, ok := v.(opentracing.Span)
 	if !ok || sp == nil {
+		xlog.S(context.TODO()).Debug("v.(opentracing.Span)  错误")
 		return
 	}
 	defer sp.Finish()

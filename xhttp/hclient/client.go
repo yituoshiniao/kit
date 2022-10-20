@@ -23,6 +23,10 @@ func New(opts ...Option) *sling.Sling {
 	doer = TraceDoer{doer: client, operationName: o.serviceName}
 	doer = LogDoer{doer: doer, durationFunc: o.durationFunc}
 
+	if o.metrics {
+		doer = MetricsDoer{doer: doer}
+	}
+
 	if o.statusCodeGuard {
 		doer = StatusCodeGuardDoer{doer: doer}
 	}

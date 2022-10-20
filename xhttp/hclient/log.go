@@ -27,8 +27,10 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	var reqBody []byte
 	var respBody []byte
 	if req.Body != nil {
-		if b, bErr := ioutil.ReadAll(req.Body); bErr != nil {
+		b, bErr := ioutil.ReadAll(req.Body)
+		if bErr != nil {
 			zap.L().Error("读取req.body失败", zap.Error(bErr))
+			return nil, bErr
 		} else {
 			reqBody = b
 			req.Body = ioutil.NopCloser(bytes.NewBuffer(b))
@@ -46,8 +48,10 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	resp, err = l.doer.Do(req)
 
 	if resp != nil && resp.Body != nil {
-		if b, bErr := ioutil.ReadAll(resp.Body); bErr != nil {
+		b, bErr := ioutil.ReadAll(resp.Body)
+		if bErr != nil {
 			zap.L().Error("读取req.body失败", zap.Error(bErr))
+			return nil, bErr
 		} else {
 			respBody = b
 			resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
@@ -88,16 +92,19 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	}
 
 	respFs := xlog.ExtFields(req.Context())
+
 	respFs = append(respFs,
 		zap.Error(err),
 		statusF,
 		statusCodeF,
 		contentLengthF,
-		zap.Reflect("header", resp.Header),
 		l.durationFunc(time.Since(startTime)),
 		respF,
 		path,
 	)
+	if resp != nil {
+		respFs = append(respFs, zap.Reflect("header", resp.Header))
+	}
 
 	zap.L().Check(level, "接收响应[http.client]").Write(respFs...)
 
