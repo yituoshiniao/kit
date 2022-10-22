@@ -87,7 +87,7 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 		if isExcludeRoutePath(req.URL.Path, excludeRoutePath) {
 			respF = zap.Int("respLen", len(respBody))
 		} else {
-			respF = zap.ByteString("resp", respBody)
+			respF = zap.ByteString("respString", respBody)
 		}
 	}
 
