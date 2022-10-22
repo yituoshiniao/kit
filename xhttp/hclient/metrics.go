@@ -40,14 +40,14 @@ func InitHttpClientAPICounterMetrics() {
 //Do 普罗米修斯监控
 func (t MetricsDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	resp, err = t.doer.Do(req)
-	go func() {
-		HttpClientAPICounter.With(
-			HttpClientAPICounterMethod, req.Method,
-			HttpClientAPICounterHost, req.Host,
-			HttpClientAPICounterPath, req.URL.Path,
-			HttpClientAPICounterProto, req.Proto,
-			HttpClientAPICounterStatus, resp.Status,
-		).Add(1)
-	}()
+	//go func() {
+	//	HttpClientAPICounter.With(
+	//		HttpClientAPICounterMethod, req.Method,
+	//		HttpClientAPICounterHost, req.Host,
+	//		HttpClientAPICounterPath, req.URL.Path,
+	//		HttpClientAPICounterProto, req.Proto,
+	//		HttpClientAPICounterStatus, resp.Status,
+	//	).Add(1)
+	//}()
 	return
 }
