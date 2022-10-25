@@ -52,29 +52,6 @@ func (p opentracingPlugin) injectBefore(db *gorm.DB, op operationName) {
 	db.InstanceSet(ctxKey, ctx)
 }
 
-func (p opentracingPlugin) metricsAfter(db *gorm.DB) {
-	//错误统计
-	if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
-		go func() {
-			DBErrCounter.With(
-				DBTable, db.Statement.Table,
-				DBOperation, strings.ToUpper(strings.Split(db.Statement.SQL.String(), " ")[0]),
-				DBErrMsg, db.Error.Error(),
-				DBSQL, db.Statement.SQL.String(),
-			).Add(1)
-		}()
-	}
-
-	//操作统计
-	go func() {
-		DBAPICounter.With(
-			DBTable, db.Statement.Table,
-			DBOperation, strings.ToUpper(strings.Split(db.Statement.SQL.String(), " ")[0]),
-		).Add(1)
-	}()
-
-}
-
 func (p opentracingPlugin) extractAfter(db *gorm.DB) {
 	// make sure context could be used
 	if db == nil {

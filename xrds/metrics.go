@@ -5,6 +5,7 @@ import (
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/go-redis/redis"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
 )
 
 var RdsAPICounter *kitprometheus.Counter
@@ -30,6 +31,11 @@ func processMetrics(ctx context.Context) func(oldProcess func(cmd redis.Cmder) e
 	return func(oldProcess func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
 		return func(cmd redis.Cmder) error {
 			go func() {
+				defer func() {
+					if err := recover(); err != nil {
+						xlog.S(ctx).Errorw("processMetrics  错误", "err", err)
+					}
+				}()
 				RdsAPICounter.With(RdsAPICounterOperation, cmd.Name()).Add(1)
 			}()
 			return oldProcess(cmd)
@@ -42,6 +48,11 @@ func processMetricsPipeline(ctx context.Context) func(oldProcess func(cmds []red
 	return func(oldProcess func(cmds []redis.Cmder) error) func(cmds []redis.Cmder) error {
 		return func(cmds []redis.Cmder) error {
 			go func() {
+				defer func() {
+					if err := recover(); err != nil {
+						xlog.S(ctx).Errorw("processMetricsPipeline 错误", "err", err)
+					}
+				}()
 				RdsAPICounter.With(RdsAPICounterOperation, "processMetricsPipeline").Add(1)
 			}()
 			return oldProcess(cmds)
