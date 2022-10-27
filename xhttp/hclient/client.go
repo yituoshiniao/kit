@@ -20,8 +20,10 @@ func New(opts ...Option) *sling.Sling {
 	client := &http.Client{Transport: o.transport, Timeout: o.timeout}
 
 	var doer sling.Doer
-	doer = TraceDoer{doer: client, operationName: o.serviceName}
-	doer = LogDoer{doer: doer, durationFunc: o.durationFunc}
+
+	//先日志 修复 cancel 无法被记录情况
+	doer = LogDoer{doer: client, durationFunc: o.durationFunc}
+	doer = TraceDoer{doer: doer, operationName: o.serviceName}
 
 	if o.metrics {
 		doer = MetricsDoer{doer: doer}
