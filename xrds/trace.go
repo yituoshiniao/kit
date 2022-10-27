@@ -7,6 +7,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"gitlab.intsig.net/cs-server2/kit/xlog"
+	"go.uber.org/zap"
 	"strconv"
 	"strings"
 )
@@ -39,10 +40,14 @@ func process(ctx context.Context, parentSpan opentracing.Span, opts *redis.Optio
 	return func(oldProcess func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
 		return func(cmd redis.Cmder) error {
 			span, tmpCtx := startSpan(ctx, parentSpan, opts, "redis", cmd.Name())
+			span.SetTag("cmd.Arsg", cmd.Args())
 			defer span.Finish()
 			defer func() {
-				xlog.S(tmpCtx).Debugw("process redis 执行命令",
-					"cmd.Name", cmd.Name(), "cmd.Args", cmd.Args())
+				fields := []zap.Field{
+					zap.String("cmd.Name", cmd.Name()),
+					zap.Any("cmd.Args", cmd.Args()),
+				}
+				xlog.L(tmpCtx).Debug("process redis 执行命令", fields...)
 			}()
 			return oldProcess(cmd)
 		}
@@ -57,8 +62,7 @@ func processPipeline(ctx context.Context, parentSpan opentracing.Span, opts *red
 			span, tmpCtx := startSpan(ctx, parentSpan, opts, "redis", commands)
 			defer span.Finish()
 			defer func() {
-				xlog.S(tmpCtx).Debugw("processPipeline redis 执行命令",
-					"commands", commands)
+				xlog.L(tmpCtx).Debug("processPipeline redis 执行命令", zap.String("commands", commands))
 			}()
 			return oldProcess(cmds)
 		}

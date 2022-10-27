@@ -133,6 +133,7 @@ func (j *ByteMarshaler) MarshalJSON() ([]byte, error) {
 	return j.Data, nil
 }
 
+//IsSecrecyMsg 排除记录字段
 func IsSecrecyMsg(msg string) bool {
 	for _, s := range []string{"password", "passWord", "pass_word"} {
 		if strings.Contains(msg, s) {
