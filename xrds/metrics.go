@@ -9,9 +9,12 @@ import (
 )
 
 var RdsAPICounter *kitprometheus.Counter
+var RdsAPIHitsCounter *kitprometheus.Counter
+var RdsAPIMissesCounter *kitprometheus.Counter
 
 const (
-	RdsAPICounterOperation string = "operation"
+	RdsAPICounterOperation    string = "operation"
+	RdsAPICounterOperationGet string = "get"
 )
 
 func InitRdsAPICounterMetrics() {
@@ -24,6 +27,23 @@ func InitRdsAPICounterMetrics() {
 		[]string{
 			RdsAPICounterOperation,
 		})
+
+	RdsAPIHitsCounter = kitprometheus.NewCounterFrom(
+		stdprometheus.CounterOpts{
+			Namespace: "",
+			Name:      "redis_hits_count",
+			Help:      "get 缓存命中数量; redis hits count of Counter metrics",
+		},
+		[]string{RdsAPICounterOperation})
+
+	RdsAPIMissesCounter = kitprometheus.NewCounterFrom(
+		stdprometheus.CounterOpts{
+			Namespace: "",
+			Name:      "redis_misses_count",
+			Help:      "get 缓存未命中数量; redis misses count of Counter metrics",
+		},
+		[]string{RdsAPICounterOperation})
+
 }
 
 // processMetrics 原生 process 包装器，增加 metrics 埋点功能.
@@ -38,7 +58,15 @@ func processMetrics(ctx context.Context) func(oldProcess func(cmd redis.Cmder) e
 				}()
 				RdsAPICounter.With(RdsAPICounterOperation, cmd.Name()).Add(1)
 			}()
-			return oldProcess(cmd)
+
+			obj := oldProcess(cmd)
+			if obj != nil && obj == redis.Nil && cmd.Name() == RdsAPICounterOperationGet {
+				RdsAPIMissesCounter.With(RdsAPICounterOperation, RdsAPICounterOperationGet).Add(1)
+			}
+			if obj == nil && (cmd.Name() == RdsAPICounterOperationGet) {
+				RdsAPIHitsCounter.With(RdsAPICounterOperation, RdsAPICounterOperationGet).Add(1)
+			}
+			return obj
 		}
 	}
 }

@@ -67,17 +67,9 @@ func (p opentracingPlugin) metrics(db *gorm.DB) {
 	}
 
 	//操作统计
-	go func() {
-		defer func() {
-			if err := recover(); err != nil {
-				xlog.S(context.Background()).Errorw("metricsAfter 错误", "err", errors.WithStack(errors.Errorf("%v", err)))
-			}
-		}()
-
-		DBAPICounter.With(
-			DBTable, db.Statement.Table,
-			DBOperation, strings.ToUpper(strings.Split(db.Statement.SQL.String(), " ")[0]),
-		).Add(1)
-	}()
+	DBAPICounter.With(
+		DBTable, db.Statement.Table,
+		DBOperation, strings.ToUpper(strings.Split(db.Statement.SQL.String(), " ")[0]),
+	).Add(1)
 
 }
