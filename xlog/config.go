@@ -36,10 +36,10 @@ type Config struct {
 
 	TimeKey string `yaml:"timeKey" json:"timeKey"`
 
-	// 日志文件路径.
-	FileName string `yaml:"filename"`
-	// Max size for a single file, in MB.
-	FileMaxSize int `yaml:"FileMaxSize"`
+	//// 日志文件路径.
+	//FileName string `yaml:"filename"`
+	//// Max size for a single file, in MB.
+	//FileMaxSize int `yaml:"FileMaxSize"`
 }
 
 // level 获取日志级别，默认是Info
@@ -72,4 +72,6 @@ type FileLogConfig struct {
 	MaxBackups int `yaml:"maxBackups" json:"maxBackups"`
 	// MAX size of bufio.Writer
 	BufSize int `yaml:"bufSize" json:"bufSize"`
+	// using gzip. The default is not to perform compression.
+	Compress bool `json:"compress" yaml:"compress"`
 }

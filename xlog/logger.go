@@ -98,7 +98,7 @@ func getErrorCore(conf Config) zapcore.Core {
 		file.Filename = filepath.Dir(file.Filename) + "/error/error.log"
 		encoder := encoderFromFormat("plain", true, conf.CallerKey)
 		return zapcore.NewCore(
-			encoder, // 编码器配置
+			encoder,                                             // 编码器配置
 			zapcore.NewMultiWriteSyncer(getRotatedSyncer(file)), // 增加同步器
 			zap.LevelEnablerFunc(func(level zapcore.Level) bool {
 				return level == zapcore.ErrorLevel
@@ -115,7 +115,7 @@ func getWarnCore(conf Config) zapcore.Core {
 		file.Filename = filepath.Dir(file.Filename) + "/error/warn.log"
 		encoder := encoderFromFormat("plain", true, conf.CallerKey)
 		return zapcore.NewCore(
-			encoder, // 编码器配置
+			encoder,                                             // 编码器配置
 			zapcore.NewMultiWriteSyncer(getRotatedSyncer(file)), // 增加同步器
 			zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 				return lvl == zapcore.WarnLevel
@@ -178,6 +178,8 @@ func getRotatedSyncer(flc FileLogConfig) zapcore.WriteSyncer {
 	writer := &rotate.Logger{
 		Filename:  flc.Filename, // 日志文件路径
 		LocalTime: true,
+		MaxAge:    flc.MaxDays,
+		Compress:  flc.Compress, //是否开启压缩
 	}
 
 	if flc.LogRotate == "" {
