@@ -49,7 +49,13 @@ func process(ctx context.Context, parentSpan opentracing.Span, opts *redis.Optio
 				}
 				xlog.L(tmpCtx).Debug("process redis 执行命令", fields...)
 			}()
-			return oldProcess(cmd)
+
+			obj := oldProcess(cmd)
+			if cmd.Err() != nil {
+				ext.Error.Set(span, true)
+				span.SetTag("cmd.Err", cmd.Err())
+			}
+			return obj
 		}
 	}
 }
