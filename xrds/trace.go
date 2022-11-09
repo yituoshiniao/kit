@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Trace 为redis.client 增加 trace 功能 ，返回 cloned client.
@@ -39,6 +40,7 @@ func Trace(ctx context.Context, client *redis.Client) *redis.Client {
 func process(ctx context.Context, parentSpan opentracing.Span, opts *redis.Options) func(oldProcess func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
 	return func(oldProcess func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
 		return func(cmd redis.Cmder) error {
+			sTime := time.Now()
 			span, tmpCtx := startSpan(ctx, parentSpan, opts, "redis", cmd.Name())
 			span.SetTag("cmd.Arsg", cmd.Args())
 			defer span.Finish()
@@ -46,6 +48,7 @@ func process(ctx context.Context, parentSpan opentracing.Span, opts *redis.Optio
 				fields := []zap.Field{
 					zap.String("cmd.Name", cmd.Name()),
 					zap.Any("cmd.Args", cmd.Args()),
+					zap.String("rds耗时", time.Now().Sub(sTime).String()),
 				}
 				xlog.L(tmpCtx).Debug("process redis 执行命令", fields...)
 			}()

@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 const (
@@ -32,6 +33,7 @@ func keyWithPrefix(key string) string {
 
 var (
 	opentracingSpanKey = "opentracing:span"
+	timeMsKey          = "timeMs"
 	ctxKey             = "ctx"
 	json               = jsoniter.ConfigCompatibleWithStandardLibrary
 )
@@ -48,6 +50,7 @@ func (p opentracingPlugin) injectBefore(db *gorm.DB, op operationName) {
 	}
 
 	sp, ctx := opentracing.StartSpanFromContextWithTracer(db.Statement.Context, p.opt.tracer, op.String())
+	db.InstanceSet(timeMsKey, time.Now())
 	db.InstanceSet(opentracingSpanKey, sp)
 	db.InstanceSet(ctxKey, ctx)
 }
@@ -63,15 +66,22 @@ func (p opentracingPlugin) extractAfter(db *gorm.DB) {
 		return
 	}
 
+	sTime, timeOk := db.InstanceGet(timeMsKey)
 	//记录日志 ctx
 	v, okCtx := db.InstanceGet(ctxKey)
 	if okCtx {
 		ctx := v.(context.Context)
+		logFields := appendLogSql(db, p.opt.logResult, p.opt.logSqlParameters)
+		if timeOk {
+			logFields = append(logFields, zap.String("gorm耗时", time.Now().Sub(sTime.(time.Time)).String()))
+			xlog.L(ctx).Info("[Gorm]:Exec", logFields...)
+		} else {
+			xlog.L(ctx).Info("[Gorm]:Exec", logFields...)
+		}
 		// log error
 		if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
 			xlog.S(ctx).Errorw("gorm 错误信息", "err", db.Error)
 		}
-		xlog.L(ctx).Info("[Gorm]:Exec", appendLogSql(db, p.opt.logResult, p.opt.logSqlParameters)...)
 	}
 
 	// extract sp from db context
