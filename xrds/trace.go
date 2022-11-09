@@ -44,6 +44,7 @@ func process(ctx context.Context, parentSpan opentracing.Span, opts *redis.Optio
 			span, tmpCtx := startSpan(ctx, parentSpan, opts, "redis", cmd.Name())
 			span.SetTag("cmd.Arsg", cmd.Args())
 			defer span.Finish()
+
 			defer func() {
 				fields := []zap.Field{
 					zap.String("cmd.Name", cmd.Name()),
