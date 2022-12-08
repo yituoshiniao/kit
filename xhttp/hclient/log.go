@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -67,13 +68,21 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	statusCodeF := zap.Skip()
 	contentLengthF := zap.Skip()
 	respF := zap.Skip()
-	path := zap.Skip()
+	//path := zap.Skip()
+	path := zap.String("path", req.URL.Path)
+	rawQuery := zap.String("rawQuery", req.URL.RawQuery)
+	tmpRawQuery, errUrl := url.QueryUnescape(req.URL.RawQuery)
+	if errUrl != nil {
+		xlog.S(req.Context()).Errorw("url.QueryUnescape错误", "err", err)
+	}
+	if errUrl == nil {
+		rawQuery = zap.String("rawQuery", tmpRawQuery)
+	}
 
 	if resp != nil {
 		statusF = zap.String("status", resp.Status)
 		statusCodeF = zap.Int("statusCode", resp.StatusCode)
 		contentLengthF = zap.Int64("contentLength", resp.ContentLength)
-		path = zap.String("path", req.URL.Path)
 
 	}
 
@@ -101,6 +110,7 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 		l.durationFunc(time.Since(startTime)),
 		respF,
 		path,
+		rawQuery,
 	)
 	if resp != nil {
 		respFs = append(respFs, zap.Reflect("header", resp.Header))
