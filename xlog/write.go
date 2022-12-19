@@ -16,13 +16,25 @@ const (
 	//LogField 日志字段
 	LogField = "xlog"
 	//MethodPath 请求方法
-	MethodPath = "methodPath"
+	MethodPath = "method_path"
 	//TimeMs 请求时间 单位毫秒
 	TimeMs = "timeMs"
 )
 
 func S(ctx context.Context) *zap.SugaredLogger {
 	return zap.L().With(ExtFields(ctx)...).Sugar()
+}
+
+//SE  S扩展
+func SE(ctx context.Context, tmpFs []zap.Field) *zap.SugaredLogger {
+	//fs := ExtFields(ctx)
+	//fs = append(tmpFs, fs...)
+	return zap.L().With(append(tmpFs, ExtFields(ctx)...)...).Sugar()
+}
+
+//LE L扩展
+func LE(ctx context.Context, tmpFs []zap.Field) *zap.Logger {
+	return zap.L().With(append(tmpFs, ExtFields(ctx)...)...)
 }
 
 func L(ctx context.Context) *zap.Logger {
