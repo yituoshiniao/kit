@@ -34,6 +34,11 @@ func Set(conf Config) (func(), error) {
 
 func New(conf Config) (*zap.Logger, error) {
 	tee := []zapcore.Core{getBaseCore(conf)}
+	//自定义日志
+	dPanicCore := getDPanicLevelCore(conf)
+	if dPanicCore != nil {
+		tee = append(tee, dPanicCore)
+	}
 	errorCore := getErrorCore(conf)
 	if errorCore != nil {
 		tee = append(tee, errorCore)
@@ -102,6 +107,23 @@ func getErrorCore(conf Config) zapcore.Core {
 			zapcore.NewMultiWriteSyncer(getRotatedSyncer(file)), // 增加同步器
 			zap.LevelEnablerFunc(func(level zapcore.Level) bool {
 				return level == zapcore.ErrorLevel
+			}),
+		)
+	}
+
+	return nil
+}
+
+func getDPanicLevelCore(conf Config) zapcore.Core {
+	if conf.File.Filename != "" {
+		file := conf.File
+		file.Filename = filepath.Dir(file.Filename) + "/diff/diff.log"
+		encoder := encoderFromFormat("plain", true, conf.CallerKey)
+		return zapcore.NewCore(
+			encoder, // 编码器配置
+			zapcore.NewMultiWriteSyncer(getRotatedSyncer(file)), // 增加同步器
+			zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+				return lvl == zapcore.DPanicLevel
 			}),
 		)
 	}
