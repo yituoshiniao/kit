@@ -202,7 +202,7 @@ func getRotatedSyncer(flc FileLogConfig) zapcore.WriteSyncer {
 		LocalTime: true,
 		MaxAge:    flc.MaxDays,
 		Compress:  flc.Compress, //是否开启压缩
-		//MaxSize:   flc.MaxSize,
+		MaxSize:   flc.MaxSize,
 	}
 
 	if flc.LogRotate == "" {
