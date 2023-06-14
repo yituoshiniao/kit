@@ -41,7 +41,15 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	reqFs := xlog.ExtFields(req.Context())
 	reqFs = append(reqFs, zap.String("method", req.Method), zap.String("url", req.URL.String()), zap.Reflect("header", req.Header))
 	if len(reqBody) > 0 && !xlog.IsSecrecyMsg(string(reqBody)) {
-		reqFs = append(reqFs, zap.Object("req", &jsonMarshaler{b: reqBody}))
+		if strings.Contains(req.Header.Get(ContentTypeJson), HeaderJSON) {
+			reqFs = append(reqFs, zap.Object("reqBody", &jsonMarshaler{b: reqBody}))
+		} else {
+			reqBody, err := url.QueryUnescape(string(reqBody))
+			if err != nil {
+				zap.L().Error("QueryUnescape-错误", zap.Error(err))
+			}
+			reqFs = append(reqFs, zap.ByteString("reqBody", []byte(reqBody)))
+		}
 	}
 
 	zap.L().Debug("发送请求[http.client]", reqFs...)
