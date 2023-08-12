@@ -48,7 +48,7 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 			if err != nil {
 				zap.L().Error("QueryUnescape-错误", zap.Error(err))
 			}
-			reqFs = append(reqFs, zap.ByteString("reqBody", []byte(reqBody)))
+			reqFs = append(reqFs, zap.String("reqBody", reqBody))
 		}
 	}
 
