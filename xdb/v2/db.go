@@ -5,11 +5,12 @@ import (
 	"github.com/pkg/errors"
 	v1 "gitlab.intsig.net/cs-server2/kit/xdb/v1"
 	"gitlab.intsig.net/cs-server2/kit/xlog"
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	_ "gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	//glogger "gorm.io/gorm/logger"
 	glogger "gorm.io/gorm/logger"
+	"moul.io/zapgorm2"
 	"time"
 )
 
@@ -29,11 +30,15 @@ func WithDBMetrics(isMetrics bool) DbOption {
 	}
 }
 
-func NewDb(conf v1.Config, opts ...DbOption) (db *gorm.DB, fn func()) {
+func NewDb(conf v1.Config, zapLogger *zap.Logger, opts ...DbOption) (db *gorm.DB, fn func()) {
 	o := &defaultDbOptions
 	for _, opt := range opts {
 		opt(o)
 	}
+
+	logger := zapgorm2.New(zapLogger)
+	logger.LogLevel = glogger.Info //开启log记录
+	logger.SetAsDefault()          // optional: configure gorm to use this zapgorm.Logger for callbacks
 
 	//dsn := fmt.Sprintf(
 	//	"%s:%s@(%s)/%s?charset=%s&parseTime=%t&loc=%s&multiStatements=%t&timeout=%ds",
@@ -41,7 +46,8 @@ func NewDb(conf v1.Config, opts ...DbOption) (db *gorm.DB, fn func()) {
 	// 参考 https://github.com/go-sql-driver/mysql#dsn-data-source-name 获取详情
 	var err error
 	db, err = gorm.Open(mysql.Open(conf.Dsn), &gorm.Config{
-		Logger:                 glogger.Discard,
+		Logger: glogger.Discard, //禁用日志输出
+		//Logger:                 logger, //设置log 使用zaplog
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
