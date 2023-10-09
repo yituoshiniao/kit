@@ -2,6 +2,8 @@ package v2
 
 import (
 	"context"
+	"time"
+
 	"github.com/pkg/errors"
 	v1 "gitlab.intsig.net/cs-server2/kit/xdb/v1"
 	"gitlab.intsig.net/cs-server2/kit/xlog"
@@ -11,7 +13,6 @@ import (
 	"gorm.io/gorm"
 	glogger "gorm.io/gorm/logger"
 	"moul.io/zapgorm2"
-	"time"
 )
 
 var defaultDbOptions = dbOptions{

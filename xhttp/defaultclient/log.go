@@ -2,13 +2,6 @@ package defaultclient
 
 import (
 	"bytes"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
-	"github.com/opentracing/opentracing-go/log"
-	"gitlab.intsig.net/cs-server2/kit/xlog"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +10,14 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+
+	"github.com/onsi/gomega/gbytes"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
+	"github.com/opentracing/opentracing-go/log"
+	"gitlab.intsig.net/cs-server2/kit/xlog"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 const (
@@ -30,7 +31,7 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 	sTime := startTime.UnixNano() / 1e6
 	var respBody []byte
 	atomic.AddInt64(&t.N, 1)
-	span, ctx := opentracing.StartSpanFromContext(req.Context(), serverName)
+	span, ctx := opentracing.StartSpanFromContext(req.Context(), t.serverName)
 	req = req.WithContext(ctx)
 	defer span.Finish()
 
@@ -53,7 +54,7 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 	tmpFields := []zap.Field{
 		zap.String(xlog.MethodPath, newReq.URL.Path),
 	}
-	xlog.LE(newReq.Context(), tmpFields).Debug("["+serverName+"]"+"发送请求",
+	xlog.LE(newReq.Context(), tmpFields).Debug("["+t.serverName+"]"+"发送请求",
 		zap.String("Host", req.URL.Host),
 		zap.String("Method", req.Method),
 		zap.String("Scheme", req.URL.Scheme),
@@ -127,8 +128,10 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 
 	if resp != nil && strings.Contains(resp.Header.Get(ContentTypeJson), HeaderJSON) {
 		respF = zap.Object("resp", &jsonMarshaller{b: respBody})
-	} else {
+	} else if strings.Contains(resp.Header.Get(ContentTypeJson), "text") {
 		respF = zap.ByteString("respString", respBody)
+	} else {
+		respF = zap.String("respBody", "respBody")
 	}
 
 	respFs := xlog.ExtFields(req.Context())

@@ -6,8 +6,9 @@ import (
 
 // Transport will count requests.
 type Transport struct {
-	N  int64             // number of requests passing this transport
-	rt http.RoundTripper // next round-tripper or http.DefaultTransport if nil
+	N          int64             // number of requests passing this transport
+	rt         http.RoundTripper // next round-tripper or http.DefaultTransport if nil
+	serverName string
 }
 
 var serverName = ""
@@ -22,13 +23,14 @@ func New(opts ...Option) *Transport {
 	for _, opt := range opts {
 		opt(o)
 	}
-	if serverName == "" {
-		serverName = "http-client-api"
-	}
 	serverName = o.serviceName
 
 	//var transport RoundTripper
 	transport := &Transport{}
+	transport.serverName = serverName
+	if transport.serverName == "" {
+		serverName = "http-client-api"
+	}
 
 	return transport
 }
