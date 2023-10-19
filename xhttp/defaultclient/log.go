@@ -128,7 +128,7 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 
 	if resp != nil && strings.Contains(resp.Header.Get(ContentTypeJson), HeaderJSON) {
 		respF = zap.Object("resp", &jsonMarshaller{b: respBody})
-	} else if strings.Contains(resp.Header.Get(ContentTypeJson), "text") {
+	} else if resp != nil && strings.Contains(resp.Header.Get(ContentTypeJson), "text") {
 		respF = zap.ByteString("respString", respBody)
 	} else {
 		respF = zap.String("respBody", "respBody")
