@@ -52,7 +52,7 @@ func NewDb(conf v1.Config, zapLogger *zap.Logger, opts ...DbOption) (db *gorm.DB
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
-		xlog.S(context.Background()).Errorw("数据库连接错误", "err", err)
+		xlog.S(context.Background()).Errorw("数据库连接错误", "err", err, "conf", conf)
 		panic(err)
 	}
 
