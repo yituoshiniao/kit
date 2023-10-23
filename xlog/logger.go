@@ -2,6 +2,9 @@ package xlog
 
 import (
 	"context"
+	"os"
+	"path/filepath"
+
 	"github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
@@ -9,8 +12,6 @@ import (
 	"gitlab.intsig.net/cs-server2/kit/xlog/rotate"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
-	"path/filepath"
 )
 
 const (
@@ -48,7 +49,11 @@ func New(conf Config) (*zap.Logger, error) {
 		tee = append(tee, warnCore)
 	}
 
-	logger := zap.New(zapcore.NewTee(tee...), zap.AddCaller())
+	opt := []zap.Option{
+		zap.AddCaller(),                        // 显示行号
+		zap.AddStacktrace(zapcore.DPanicLevel), // err 错误级别，增加堆栈打印
+	}
+	logger := zap.New(zapcore.NewTee(tee...), opt...)
 
 	_, _ = zap.RedirectStdLogAt(logger, conf.level()) //替换标准库的日志输出
 
