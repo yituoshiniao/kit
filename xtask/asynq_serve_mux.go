@@ -5,6 +5,9 @@ import (
 	log "log"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+
 	"github.com/hibiken/asynq"
 	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"gitlab.intsig.net/cs-server2/kit/xtrace"
@@ -12,7 +15,7 @@ import (
 
 func NewAsynqServeMux() (serveMux *asynq.ServeMux) {
 	serveMux = asynq.NewServeMux()
-	serveMux.Use(loggingMiddleware)
+	serveMux.Use(loggingMiddleware, metricsMiddleware)
 	return serveMux
 }
 
@@ -26,6 +29,46 @@ func loggingMiddleware1(h asynq.Handler) asynq.Handler {
 		}
 		log.Printf("完成处理 %q: 经过时间 = %v", t.Type(), time.Since(start))
 		return nil
+	})
+}
+
+// 指标变量。
+var (
+	processedCounter = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "processed_tasks_total",
+			Help: "处理任务的总数",
+		},
+		[]string{"task_type"},
+	)
+
+	failedCounter = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "failed_tasks_total",
+			Help: "处理失败的总次数",
+		},
+		[]string{"task_type"},
+	)
+
+	inProgressGauge = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "in_progress_tasks",
+			Help: "当前正在处理的任务数",
+		},
+		[]string{"task_type"},
+	)
+)
+
+func metricsMiddleware(next asynq.Handler) asynq.Handler {
+	return asynq.HandlerFunc(func(ctx context.Context, t *asynq.Task) error {
+		inProgressGauge.WithLabelValues(t.Type()).Inc()
+		err := next.ProcessTask(ctx, t)
+		inProgressGauge.WithLabelValues(t.Type()).Dec()
+		if err != nil {
+			failedCounter.WithLabelValues(t.Type()).Inc()
+		}
+		processedCounter.WithLabelValues(t.Type()).Inc()
+		return err
 	})
 }
 
