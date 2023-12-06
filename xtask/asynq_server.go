@@ -2,21 +2,25 @@ package xtask
 
 import (
 	"context"
+	"strings"
+	"time"
 
 	"github.com/hibiken/asynq"
 	"gitlab.intsig.net/cs-server2/kit/xlog"
 	"gitlab.intsig.net/cs-server2/kit/xrds"
 )
 
-// AsynqQueue 队列名字
 type AsynqQueue string
 
+// 注意默认task 不指定队列 默认使用default,当指定的队列不在如下中,那么注册的handle无法处理任务
 const (
-	CriticalQueue AsynqQueue = "critical"
-	DefaultQueue  AsynqQueue = "default"
-	LowQueue      AsynqQueue = "low"
-	HighQueue     AsynqQueue = "high"
-	AdVideoQueue  AsynqQueue = "ad_video"
+	CriticalQueue       AsynqQueue = "critical"
+	DefaultQueue        AsynqQueue = "default"
+	LowQueue            AsynqQueue = "low"
+	HighQueue           AsynqQueue = "high"
+	AdVideoQueue        AsynqQueue = "adVideo"
+	GroupQueue          AsynqQueue = "groupQueue"
+	GroupSchedulerQueue AsynqQueue = "schedulerQuee"
 )
 
 /****
@@ -41,44 +45,42 @@ func NewAsynqServer(ctx context.Context, conf xrds.Config) (client *asynq.Server
 			//Concurrency: 5,
 			// 队列优先级
 			Queues: map[string]int{
-				string(CriticalQueue): 50,
-				string(HighQueue):     20,
-				string(DefaultQueue):  15,
-				string(AdVideoQueue):  14,
-				string(LowQueue):      1,
+				string(CriticalQueue):       50,
+				string(HighQueue):           10,
+				string(GroupSchedulerQueue): 10,
+				string(DefaultQueue):        15,
+				string(AdVideoQueue):        9,
+				string(GroupQueue):          5,
+				string(LowQueue):            1,
 			},
 			// 错误回调处理
 			ErrorHandler: asynq.ErrorHandlerFunc(reportError),
 			Logger:       NewLogger(),
+
+			//组聚合参数
+			GroupAggregator:  asynq.GroupAggregatorFunc(aggregate),
+			GroupGracePeriod: 10 * time.Second, //组的优雅延迟时间, 每10秒聚合一次
+			GroupMaxDelay:    30 * time.Second, //组的最大延迟时间
+			GroupMaxSize:     10,               //组的最大尺寸
 		},
 	)
 	return client
 }
 
-type Logger struct{}
+// AggregateTypeName 聚合 typename
+const AggregateTypeName = "aggregated-task"
 
-func NewLogger() *Logger {
-	return &Logger{}
-}
-
-func (l *Logger) Info(args ...interface{}) {
-	xlog.S(context.Background()).Info(args)
-}
-
-func (l *Logger) Debug(args ...interface{}) {
-	xlog.S(context.Background()).Debug(args)
-}
-
-func (l *Logger) Warn(args ...interface{}) {
-	xlog.S(context.Background()).Warn(args)
-}
-
-func (l *Logger) Error(args ...interface{}) {
-	xlog.S(context.Background()).Error(args)
-}
-
-func (l *Logger) Fatal(args ...interface{}) {
-	xlog.S(context.Background()).Fatal(args)
+// 简单的聚合函数。
+// 将所有任务的消息组合在一起，每个消息占一行。
+func aggregate(group string, tasks []*asynq.Task) *asynq.Task {
+	xlog.S(context.Background()).Infow("aggregate聚合信息", "group", group, "len", len(tasks))
+	var b strings.Builder
+	for _, t := range tasks {
+		b.Write(t.Payload())
+		b.WriteString("\n")
+	}
+	return asynq.NewTask(AggregateTypeName, []byte(b.String()))
+	//return asynq.NewTask("email:groupDeliver", []byte(b.String()))
 }
 
 // reportError 错误回调处理函数
