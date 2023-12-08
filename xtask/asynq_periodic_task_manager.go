@@ -36,7 +36,11 @@ func NewPeriodicTaskManager(ctx context.Context, conf xrds.Config, asynqConfig A
 		Location: loc,
 	}
 
-	provider := &FileBasedConfigProvider{filename: asynqConfig.PeriodicTaskConfig, enablePeriodicTaskSched: asynqConfig.EnablePeriodicTaskSched}
+	provider := &FileBasedConfigProvider{
+		filename:                asynqConfig.PeriodicTaskConfig,
+		enablePeriodicTaskSched: asynqConfig.EnablePeriodicTaskSched,
+		ctx:                     ctx,
+	}
 	client, err = asynq.NewPeriodicTaskManager(
 		asynq.PeriodicTaskManagerOpts{
 			RedisConnOpt:               redisConnOpt,
@@ -57,6 +61,7 @@ func NewPeriodicTaskManager(ctx context.Context, conf xrds.Config, asynqConfig A
 type FileBasedConfigProvider struct {
 	filename                string
 	enablePeriodicTaskSched bool
+	ctx                     context.Context
 }
 
 // GetConfigs Parses the yaml file and return a list of PeriodicTaskConfigs.
@@ -72,7 +77,8 @@ func (p *FileBasedConfigProvider) GetConfigs() ([]*asynq.PeriodicTaskConfig, err
 	var configs []*asynq.PeriodicTaskConfig
 
 	if !p.enablePeriodicTaskSched {
-		xlog.S(context.Background()).Info("不需要注册动态调度任务")
+		//保证注册的调度任务只有一个，否则会出现重复调度
+		xlog.S(p.ctx).Info("不需要注册动态调度任务")
 		return configs, nil
 	}
 
