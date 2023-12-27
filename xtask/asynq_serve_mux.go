@@ -78,11 +78,12 @@ func loggingMiddleware(h asynq.Handler) asynq.Handler {
 		start := time.Now()
 		xlog.S(ctx).Infow("task任务处理开始Start", "task", string(task.Payload()), "task.Type()", task.Type())
 		err := h.ProcessTask(ctx, task)
-		xlog.S(ctx).Infow("task任务处理结束Finished", "task耗时", time.Since(start).String())
 		if err != nil {
 			xlog.S(ctx).Errorw("任务执行错误", "err", err)
+			xlog.S(ctx).Infow("task任务处理结束Finished", "task耗时", time.Since(start).String())
 			return err
 		}
+		xlog.S(ctx).Infow("task任务处理结束Finished", "task耗时", time.Since(start).String())
 		return nil
 	})
 }
