@@ -49,7 +49,8 @@ func handlePreEnqueueFunc(task *asynq.Task, opts []asynq.Option) {
 
 // handlePostEnqueueFunc 调度程序将任务排入队列后调用的
 func handlePostEnqueueFunc(taskInfo *asynq.TaskInfo, err error) {
-	xlog.S(context.Background()).Infow("handlePostEnqueueFunc-处理", "err",
-		err, "taskInfo", taskInfo, "payload", string(taskInfo.Payload))
-
+	xlog.S(context.Background()).Infow("handlePostEnqueueFunc-处理", "taskInfo", taskInfo, "payload", string(taskInfo.Payload))
+	if err != nil {
+		xlog.S(context.Background()).Errorw("handlePostEnqueueFunc-处理err", "err", err)
+	}
 }
