@@ -8,6 +8,7 @@ import (
 	"gitlab.intsig.net/cs-server2/kit/xrds"
 )
 
+// NewAsynqClient 任务队列queue 客户端
 func NewAsynqClient(conf xrds.Config) (client *asynq.Client, cleanup func()) {
 	client = asynq.NewClient(asynq.RedisClientOpt{
 		Addr:     conf.Addr,

@@ -20,6 +20,7 @@ type AsynqConfig struct {
 	EnablePeriodicTaskSched bool   `yaml:"enablePeriodicTaskSched" json:"enablePeriodicTaskSched"`
 }
 
+// NewPeriodicTaskManager asynq 动态调度任务、可以通过配置文件动态改变任务运行时间
 func NewPeriodicTaskManager(ctx context.Context, conf xrds.Config, asynqConfig AsynqConfig) (client *asynq.PeriodicTaskManager) {
 	redisConnOpt := asynq.RedisClientOpt{
 		Addr:     conf.Addr,

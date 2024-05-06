@@ -33,6 +33,7 @@ const (
 	Completed：任务已成功处理，并保留到保留时间到期为止（仅适用于具有Retention选项的任务）。
 ****/
 
+// NewAsynqServer asynq 服务端
 func NewAsynqServer(ctx context.Context, conf xrds.Config) (client *asynq.Server) {
 	client = asynq.NewServer(
 		asynq.RedisClientOpt{

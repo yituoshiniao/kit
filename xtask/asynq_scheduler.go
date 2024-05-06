@@ -19,6 +19,7 @@ import (
 	Completed：任务已成功处理，并保留到保留时间到期为止（仅适用于具有Retention选项的任务）。
 ****/
 
+// NewAsynqScheduler asynq 调度任务、和定时任务类似
 func NewAsynqScheduler(ctx context.Context, conf xrds.Config) (client *asynq.Scheduler) {
 	loc, err := time.LoadLocation("Asia/Shanghai")
 	if err != nil {
