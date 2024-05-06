@@ -35,6 +35,7 @@ func NewPeriodicTaskManager(ctx context.Context, conf xrds.Config, asynqConfig A
 
 	schedulerOpts := &asynq.SchedulerOpts{
 		Location: loc,
+		Logger:   NewLogger(ctx),
 	}
 
 	provider := &FileBasedConfigProvider{

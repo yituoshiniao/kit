@@ -36,6 +36,7 @@ func NewAsynqScheduler(ctx context.Context, conf xrds.Config) (client *asynq.Sch
 			Location:        loc,
 			PostEnqueueFunc: handlePostEnqueueFunc,
 			PreEnqueueFunc:  handlePreEnqueueFunc,
+			Logger:          NewLogger(ctx),
 		},
 	)
 	return client

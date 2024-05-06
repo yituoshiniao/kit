@@ -6,26 +6,30 @@ import (
 	"gitlab.intsig.net/cs-server2/kit/xlog"
 )
 
-type Logger struct{}
+type Logger struct {
+	ctx context.Context
+}
 
-func NewLogger() *Logger {
-	return &Logger{}
+func NewLogger(ctx context.Context) *Logger {
+	return &Logger{
+		ctx: ctx,
+	}
 }
 
 func (l *Logger) Info(args ...interface{}) {
-	xlog.S(context.Background()).Info(args)
+	xlog.S(l.ctx).Info(args)
 }
 
 func (l *Logger) Debug(args ...interface{}) {
-	xlog.S(context.Background()).Debug(args)
+	xlog.S(l.ctx).Debug(args)
 }
 
 func (l *Logger) Warn(args ...interface{}) {
-	xlog.S(context.Background()).Warn(args)
+	xlog.S(l.ctx).Warn(args)
 }
 
 func (l *Logger) Error(args ...interface{}) {
-	xlog.S(context.Background()).Error(args)
+	xlog.S(l.ctx).Error(args)
 }
 
 func (l *Logger) Fatal(args ...interface{}) {

@@ -56,7 +56,7 @@ func NewAsynqServer(ctx context.Context, conf xrds.Config) (client *asynq.Server
 			},
 			// 错误回调处理
 			ErrorHandler: asynq.ErrorHandlerFunc(reportError),
-			Logger:       NewLogger(),
+			Logger:       NewLogger(ctx),
 
 			//组聚合参数
 			GroupAggregator:  asynq.GroupAggregatorFunc(aggregate),
