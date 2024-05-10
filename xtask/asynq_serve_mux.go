@@ -76,7 +76,6 @@ func metricsMiddleware(next asynq.Handler) asynq.Handler {
 func loggingMiddleware(h asynq.Handler) asynq.Handler {
 	return asynq.HandlerFunc(func(ctx context.Context, task *asynq.Task) error {
 		ctx = xtrace.NewCtxWithTraceId(ctx)
-		//ctx = xtrace.NewCtxWithTraceId(context.Background())
 		start := time.Now()
 		xlog.S(ctx).Infow("task任务处理开始Start", "task", string(task.Payload()), "task.Type()", task.Type())
 		err := h.ProcessTask(ctx, task)
