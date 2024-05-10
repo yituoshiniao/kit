@@ -1,7 +1,7 @@
 package hserver
 
 import (
-	"gitlab.intsig.net/cs-server2/kit/xlog"
+	"github.com/yituoshiniao/kit/xlog"
 	"context"
 	"fmt"
 	"github.com/julienschmidt/httprouter"

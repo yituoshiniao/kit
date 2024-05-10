@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"gitlab.intsig.net/cs-server2/kit/xlog"
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 func Begin(ctx context.Context, db *gorm.DB) (tx *gorm.DB, err error) {

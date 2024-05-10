@@ -1,7 +1,7 @@
 package hserver
 
 import (
-	"gitlab.intsig.net/cs-server2/kit/xtrace"
+	"github.com/yituoshiniao/kit/xtrace"
 	"net/http"
 )
 

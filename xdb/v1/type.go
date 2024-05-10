@@ -3,7 +3,7 @@ package v1
 import (
 	"database/sql/driver"
 	"github.com/pkg/errors"
-	"gitlab.intsig.net/cs-server2/kit/xslice"
+	"github.com/yituoshiniao/kit/xslice"
 	"strconv"
 	"strings"
 )

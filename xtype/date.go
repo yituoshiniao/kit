@@ -2,12 +2,13 @@
 package xtype
 
 import (
-	"gitlab.intsig.net/cs-server2/kit/xtime"
 	"database/sql/driver"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/yituoshiniao/kit/xtime"
 )
 
 const (

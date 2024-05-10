@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/hibiken/asynq"
-	"gitlab.intsig.net/cs-server2/kit/xlog"
-	"gitlab.intsig.net/cs-server2/kit/xrds"
+	"github.com/yituoshiniao/kit/xlog"
+	"github.com/yituoshiniao/kit/xrds"
 )
 
 // NewAsynqClient 任务队列queue 客户端

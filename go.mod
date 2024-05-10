@@ -1,4 +1,4 @@
-module gitlab.intsig.net/cs-server2/kit
+module github.com/yituoshiniao/kit
 
 go 1.13
 

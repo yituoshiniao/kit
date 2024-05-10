@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
-	"gitlab.intsig.net/cs-server2/kit/xtrace"
+	"github.com/yituoshiniao/kit/xtrace"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"runtime"

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	v1 "gitlab.intsig.net/cs-server2/kit/xdb/v1"
-	"gitlab.intsig.net/cs-server2/kit/xlog"
+	v1 "github.com/yituoshiniao/kit/xdb/v1"
+	"github.com/yituoshiniao/kit/xlog"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	_ "gorm.io/driver/mysql"

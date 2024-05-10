@@ -3,7 +3,7 @@ package hclient
 import (
 	"bytes"
 	"github.com/dghubble/sling"
-	"gitlab.intsig.net/cs-server2/kit/xlog"
+	"github.com/yituoshiniao/kit/xlog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io/ioutil"

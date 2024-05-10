@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
 	"github.com/tchap/zapext/zapsentry"
-	"gitlab.intsig.net/cs-server2/kit/xlog/rotate"
+	"github.com/yituoshiniao/kit/xlog/rotate"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
