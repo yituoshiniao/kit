@@ -23,19 +23,13 @@ const (
 
 type LogRotate string
 
-func Set(conf Config) (func(), error) {
-	logger, err := New(conf)
-	if err != nil {
-		return func() {}, err
-	}
-	return func() {
-		_ = logger.Sync()
-	}, nil
+func init() {
+	initLog(defaultOptions)
 }
 
-func New(conf Config) (*zap.Logger, error) {
+func initLog(conf Config) (*zap.Logger, error) {
 	tee := []zapcore.Core{getBaseCore(conf)}
-	//自定义日志
+	// 自定义日志
 	dPanicCore := getDPanicLevelCore(conf)
 	if dPanicCore != nil {
 		tee = append(tee, dPanicCore)
@@ -55,7 +49,7 @@ func New(conf Config) (*zap.Logger, error) {
 	}
 	logger := zap.New(zapcore.NewTee(tee...), opt...)
 
-	_, _ = zap.RedirectStdLogAt(logger, conf.level()) //替换标准库的日志输出
+	_, _ = zap.RedirectStdLogAt(logger, conf.level()) // 替换标准库的日志输出
 
 	sentryCore, err := getSentryCore(conf.SentryDSN)
 	if err != nil {
@@ -67,14 +61,28 @@ func New(conf Config) (*zap.Logger, error) {
 	}
 
 	logger = logger.Named(conf.ServiceName)
-	//替换全局logger
+	// 替换全局logger
 	zap.ReplaceGlobals(logger)
 	if err = recordPanic(conf.File.Filename); err != nil {
 		S(context.Background()).Warnw("recordPanic错误", "err", err)
 		return nil, err
 	}
-
 	return logger, nil
+}
+
+func Set(conf Config) (func(), error) {
+	logger, err := New(conf)
+	if err != nil {
+		return func() {}, err
+	}
+	return func() {
+		_ = logger.Sync()
+	}, nil
+}
+
+func New(conf Config) (*zap.Logger, error) {
+	logger, err := initLog(conf)
+	return logger, err
 }
 
 func getBaseCore(conf Config) zapcore.Core {
@@ -88,11 +96,11 @@ func getBaseCore(conf Config) zapcore.Core {
 	}
 
 	if conf.Stdout {
-		//添加控制台打印
+		// 添加控制台打印
 		syncers = append(syncers, getStdoutSyncer())
 	}
 
-	//zapcore.NewCore(zapcore.NewJSONEncoder(config), zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout)), logLevel),//同时将日志输出到控制台，NewJSONEncoder 是结构化输出
+	// zapcore.NewCore(zapcore.NewJSONEncoder(config), zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout)), logLevel),//同时将日志输出到控制台，NewJSONEncoder 是结构化输出
 
 	return zapcore.NewCore(
 		encoderFromFormat(conf.Format, conf.LevelColor, conf.CallerKey), // 编码器配置
@@ -166,12 +174,12 @@ func getSentryCore(sentryDSN string) (*zapsentry.Core, error) {
 
 func encoderFromFormat(format string, levelColor bool, callerKey string) zapcore.Encoder {
 	ec := zap.NewProductionEncoderConfig()
-	//ec.EncodeTime = zapcore.ISO8601TimeEncoder
+	// ec.EncodeTime = zapcore.ISO8601TimeEncoder
 	ec.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05.000")
 	ec.TimeKey = "time"
 
 	if callerKey != "" {
-		ec.CallerKey = callerKey //显示日志行号
+		ec.CallerKey = callerKey // 显示日志行号
 	}
 	ec.NameKey = "app"
 	if levelColor {
@@ -184,7 +192,7 @@ func encoderFromFormat(format string, levelColor bool, callerKey string) zapcore
 	}
 }
 
-//func getRotatedSyncer(flc FileLogConfig) zapcore.WriteSyncer {
+// func getRotatedSyncer(flc FileLogConfig) zapcore.WriteSyncer {
 //	writer := &lumberjack.Logger{
 //		Filename:   flc.Filename,   // 日志文件路径
 //		MaxSize:    flc.MaxSize,    // 每个日志文件保存的最大尺寸 单位：M
@@ -199,14 +207,14 @@ func encoderFromFormat(format string, levelColor bool, callerKey string) zapcore
 //	}()
 //
 //	return zapcore.AddSync(writer)
-//}
+// }
 
 func getRotatedSyncer(flc FileLogConfig) zapcore.WriteSyncer {
 	writer := &rotate.Logger{
 		Filename:  flc.Filename, // 日志文件路径
 		LocalTime: true,
 		MaxAge:    flc.MaxDays,
-		Compress:  flc.Compress, //是否开启压缩
+		Compress:  flc.Compress, // 是否开启压缩
 		MaxSize:   flc.MaxSize,
 	}
 
