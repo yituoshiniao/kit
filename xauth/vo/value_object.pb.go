@@ -31,7 +31,7 @@ var (
 	}
 )
 
-//UserRoleToInt32 ...
+// UserRoleToInt32 ...
 func UserRoleToInt32(input string) int32 {
 	if UserRoleToInt, ok := UserRoleMapToInt[input]; ok {
 		return int32(UserRoleToInt)

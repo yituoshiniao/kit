@@ -2,15 +2,17 @@ package hclient
 
 import (
 	"bytes"
-	"github.com/dghubble/sling"
-	"github.com/yituoshiniao/kit/xlog"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/dghubble/sling"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 type LogDoer struct {
@@ -76,7 +78,7 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	statusCodeF := zap.Skip()
 	contentLengthF := zap.Skip()
 	respF := zap.Skip()
-	//path := zap.Skip()
+	// path := zap.Skip()
 	path := zap.String("path", req.URL.Path)
 	rawQuery := zap.String("rawQuery", req.URL.RawQuery)
 	tmpRawQuery, errUrl := url.QueryUnescape(req.URL.RawQuery)
@@ -97,9 +99,9 @@ func (l LogDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	if resp != nil && strings.Contains(resp.Header.Get(ContentTypeJson), HeaderJSON) {
 		respF = zap.Object("resp", &jsonMarshaler{b: respBody})
 	} else {
-		//respF = zap.Object("resp", &jsonMarshaler{b: respBody})
-		//错误响应处理
-		//respF = zap.ByteString("resp", respBody)
+		// respF = zap.Object("resp", &jsonMarshaler{b: respBody})
+		// 错误响应处理
+		// respF = zap.ByteString("resp", respBody)
 
 		if isExcludeRoutePath(req.URL.Path, excludeRoutePath) {
 			respF = zap.Int("respLen", len(respBody))

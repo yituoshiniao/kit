@@ -3,14 +3,16 @@ package xrds
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
-	"github.com/yituoshiniao/kit/xlog"
-	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-redis/redis"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
+	"go.uber.org/zap"
+
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 // Trace 为redis.client 增加 trace 功能 ，返回 cloned client.
@@ -83,7 +85,7 @@ func processPipeline(ctx context.Context, parentSpan opentracing.Span, opts *red
 func cmdsName(cmds []redis.Cmder) string {
 	names := make([]string, len(cmds))
 	for i, cmd := range cmds {
-		//names[i] = cmd.Name()
+		// names[i] = cmd.Name()
 		names[i] = fmt.Sprintf("cmd.Name:%s; cmd.args:%v", cmd.Name(), cmd.Args())
 	}
 	return strings.Join(names, " -> ")
@@ -91,8 +93,8 @@ func cmdsName(cmds []redis.Cmder) string {
 
 // startSpan 开启并返回 ChildSpan，记得在调用方执行 defer span.Finish().
 func startSpan(ctx context.Context, parentSpan opentracing.Span, opts *redis.Options, operationName, method string) (opentracing.Span, context.Context) {
-	//tr := parentSpan.Tracer()
-	//sp := tr.StartSpan(operationName, opentracing.ChildOf(parentSpan.Context()))
+	// tr := parentSpan.Tracer()
+	// sp := tr.StartSpan(operationName, opentracing.ChildOf(parentSpan.Context()))
 	sp, tmpCtx := opentracing.StartSpanFromContext(ctx, fmt.Sprintf("%s-%s", operationName, method))
 	ext.DBType.Set(sp, "redis")
 	ext.PeerAddress.Set(sp, opts.Addr)

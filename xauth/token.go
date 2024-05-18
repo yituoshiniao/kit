@@ -6,16 +6,18 @@ import (
 	"encoding/json"
 	rawerrors "errors"
 	"fmt"
-	"github.com/pkg/errors"
-	vov2 "github.com/yituoshiniao/kit/xauth/vo"
-	"github.com/yituoshiniao/kit/xcookie"
-	"github.com/yituoshiniao/kit/xlog"
-	"google.golang.org/grpc/metadata"
 	"math"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	"google.golang.org/grpc/metadata"
+
+	vov2 "github.com/yituoshiniao/kit/xauth/vo"
+	"github.com/yituoshiniao/kit/xcookie"
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 const (
@@ -285,13 +287,13 @@ func FromCtx(ctx context.Context) (auth Auth, err error) {
 		return guest, nil
 	}
 
-	//优先取cookie
+	// 优先取cookie
 	cookies := xcookie.ReadCookies(md.Get(CookieTokenName3), CookieTokenName1)
 	if len(cookies) > 0 && cookies[0].Value != "null" {
 		return FromToken(ctx, cookies[0].Value)
 	}
 
-	//次之读取header
+	// 次之读取header
 	v := md.Get(HeaderTokenName1)
 	if len(v) == 0 {
 		return guest, nil

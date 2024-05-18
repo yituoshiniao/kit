@@ -20,7 +20,7 @@ const (
 
 func EncodeUserNumberWithSuffix(userId int, suffix int) (int64, error) {
 
-	//number 升级.
+	// number 升级.
 	userIdStr := strconv.FormatInt(int64(userId), 10)
 	if len(userIdStr) >= 10 {
 		return int64(userId), nil
@@ -30,10 +30,10 @@ func EncodeUserNumberWithSuffix(userId int, suffix int) (int64, error) {
 	return strconv.ParseInt(userNumber, 10, 64)
 }
 
-//EncodeUserNumber 补位
+// EncodeUserNumber 补位
 func EncodeUserNumber(userId int) (int64, error) {
 
-	//number 升级.
+	// number 升级.
 	userIdStr := strconv.FormatInt(int64(userId), 10)
 	if len(userIdStr) >= 10 {
 		return int64(userId), nil
@@ -117,7 +117,7 @@ func decode(userNumber int64) int {
 
 }
 
-//键值互换
+// 键值互换
 func arrayFlip(mapBit []uint) map[uint]uint {
 	res := map[uint]uint{}
 	for i, v := range mapBit {

@@ -1,11 +1,13 @@
 package hserver
 
 import (
-	"github.com/yituoshiniao/kit/xlog"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 var (
@@ -46,8 +48,8 @@ func (s *LogMiddleware) ServeHTTP(rw http.ResponseWriter, r *http.Request, next 
 	resp := r.Context().Value(RespKey)
 	err, _ := r.Context().Value(ErrKey).(error)
 
-	//code := status.Code(err)
-	//level := grpc_zap.DefaultCodeToLevel(code)
+	// code := status.Code(err)
+	// level := grpc_zap.DefaultCodeToLevel(code)
 
 	level := zapcore.InfoLevel
 

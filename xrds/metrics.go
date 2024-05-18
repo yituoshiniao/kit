@@ -2,9 +2,11 @@ package xrds
 
 import (
 	"context"
+
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/go-redis/redis"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
+
 	"github.com/yituoshiniao/kit/xlog"
 )
 

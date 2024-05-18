@@ -25,14 +25,14 @@ func S(ctx context.Context) *zap.SugaredLogger {
 	return zap.L().With(ExtFields(ctx)...).Sugar()
 }
 
-//SE  S扩展
+// SE  S扩展
 func SE(ctx context.Context, tmpFs []zap.Field) *zap.SugaredLogger {
 	//fs := ExtFields(ctx)
 	//fs = append(tmpFs, fs...)
 	return zap.L().With(append(tmpFs, ExtFields(ctx)...)...).Sugar()
 }
 
-//LE L扩展
+// LE L扩展
 func LE(ctx context.Context, tmpFs []zap.Field) *zap.Logger {
 	return zap.L().With(append(tmpFs, ExtFields(ctx)...)...)
 }
@@ -52,12 +52,12 @@ func ExtFields(ctx context.Context) (fs []zap.Field) {
 	return fs
 }
 
-//Sn 未默认加载 zap.Namespace(LogField),
+// Sn 未默认加载 zap.Namespace(LogField),
 func Sn(ctx context.Context) *zap.SugaredLogger {
 	return zap.L().With(ExtFieldsNotNamespace(ctx)...).Sugar()
 }
 
-//Ln 未默认加载 zap.Namespace(LogField),
+// Ln 未默认加载 zap.Namespace(LogField),
 func Ln(ctx context.Context) *zap.Logger {
 	return zap.L().With(ExtFieldsNotNamespace(ctx)...)
 }
@@ -72,7 +72,7 @@ func ExtFieldsNotNamespace(ctx context.Context) (fs []zap.Field) {
 	return fs
 }
 
-//TraceIdField 写入 taceId 到日志组件中
+// TraceIdField 写入 taceId 到日志组件中
 func TraceIdField(ctx context.Context) (f zap.Field) {
 	if id := xtrace.TraceIdFromContext(ctx); id != "" {
 		return zap.String("traceId", xtrace.TraceIdFromContext(ctx))
@@ -81,7 +81,7 @@ func TraceIdField(ctx context.Context) (f zap.Field) {
 
 }
 
-//GidField ...
+// GidField ...
 func GidField() (f zap.Field) {
 	var (
 		buf [64]byte
@@ -145,7 +145,7 @@ func (j *ByteMarshaler) MarshalJSON() ([]byte, error) {
 	return j.Data, nil
 }
 
-//IsSecrecyMsg 排除记录字段
+// IsSecrecyMsg 排除记录字段
 func IsSecrecyMsg(msg string) bool {
 	for _, s := range []string{"password", "passWord", "pass_word"} {
 		if strings.Contains(msg, s) {

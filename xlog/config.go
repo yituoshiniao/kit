@@ -31,15 +31,15 @@ type Config struct {
 	File FileLogConfig `yaml:"file" json:"file"`
 	// Sentry 的 DSN地址，如果配置了次参数，warn 级别以上的错误会发送sentry
 	SentryDSN string `yaml:"sentryDSN" json:"sentryDSN"`
-	//日志展示 行号配置
+	// 日志展示 行号配置
 	CallerKey string `yaml:"callerKey" json:"callerKey"`
 
 	TimeKey string `yaml:"timeKey" json:"timeKey"`
 
-	//// 日志文件路径.
-	//FileName string `yaml:"filename"`
-	//// Max size for a single file, in MB.
-	//FileMaxSize int `yaml:"FileMaxSize"`
+	// // 日志文件路径.
+	// FileName string `yaml:"filename"`
+	// // Max size for a single file, in MB.
+	// FileMaxSize int `yaml:"FileMaxSize"`
 }
 
 // level 获取日志级别，默认是Info
@@ -62,8 +62,8 @@ type FileLogConfig struct {
 
 	// 日志文件滚动切割的频率，@hourly 每小时，@daily 每天，默认为 @hourly.
 	LogRotate LogRotate `yaml:"logRotate" json:"logRotate"`
-	//// Is log rotate enabled.
-	//LogRotate bool `yaml:"logRotate" json:"logRotate"`
+	// // Is log rotate enabled.
+	// LogRotate bool `yaml:"logRotate" json:"logRotate"`
 	// Max size for a single file, in MB.
 	MaxSize int `yaml:"maxSize" json:"maxSize"`
 	// Max log keep days, default is never deleting.

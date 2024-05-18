@@ -2,12 +2,14 @@ package v2
 
 import (
 	"context"
+	"strings"
+
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/pkg/errors"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
-	"github.com/yituoshiniao/kit/xlog"
 	"gorm.io/gorm"
-	"strings"
+
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 var DBAPICounter *kitprometheus.Counter
@@ -48,7 +50,7 @@ func InitDBCounterMetrics() {
 }
 
 func (p opentracingPlugin) metrics(db *gorm.DB) {
-	//错误统计
+	// 错误统计
 	if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
 		go func() {
 			defer func() {
@@ -66,7 +68,7 @@ func (p opentracingPlugin) metrics(db *gorm.DB) {
 		}()
 	}
 
-	//操作统计
+	// 操作统计
 	DBAPICounter.With(
 		DBTable, db.Statement.Table,
 		DBOperation, strings.ToUpper(strings.Split(db.Statement.SQL.String(), " ")[0]),

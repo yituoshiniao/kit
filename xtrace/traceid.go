@@ -3,13 +3,14 @@ package xtrace
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"sync"
+	"time"
+
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/utils"
 	"google.golang.org/grpc/metadata"
-	"math/rand"
-	"sync"
-	"time"
 )
 
 const KeyName = "traceId"
@@ -52,7 +53,7 @@ func (t TraceId) IsValid() bool {
 	return t.High != 0 || t.Low != 0
 }
 
-//TraceIdFromContext 从context中获取TraceId
+// TraceIdFromContext 从context中获取TraceId
 func TraceIdFromContext(ctx context.Context) (traceId string) {
 	span := opentracing.SpanFromContext(ctx)
 	if span != nil {
@@ -86,7 +87,7 @@ func WithSubTraceId(ctx context.Context) context.Context {
 	return metadata.NewIncomingContext(ctx, md)
 }
 
-//获取ctx中的traceID
+// 获取ctx中的traceID
 func GetTraceID(ctx context.Context) (traceID string) {
 	span := opentracing.SpanFromContext(ctx)
 	if span != nil {

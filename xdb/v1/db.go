@@ -4,6 +4,8 @@ package v1
 
 import (
 	"context"
+	"time"
+
 	"github.com/dlmiddlecote/sqlstats"
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
@@ -11,8 +13,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	gormbulk "github.com/t-tiger/gorm-bulk-insert/v2"
+
 	"github.com/yituoshiniao/kit/xlog"
-	"time"
 )
 
 func Open(mysql Mysql) (*gorm.DB, func()) {

@@ -2,12 +2,13 @@ package xtrace
 
 import (
 	"context"
-	"github.com/opentracing/opentracing-go"
-	"github.com/uber/jaeger-client-go"
-	"github.com/uber/jaeger-client-go/config"
 	"io"
 	"log"
 	"os"
+
+	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
 )
 
 func Set(conf Config) func() {
@@ -22,10 +23,10 @@ func New(conf Config) (tracer opentracing.Tracer, closer io.Closer) {
 	cfg := (config.Configuration)(conf)
 	cfg.Tags = append(cfg.Tags, hostname())
 
-	//使用zipkin 日志追踪
-	//zipkinPropagator := zipkin.NewZipkinB3HTTPHeaderPropagator()
+	// 使用zipkin 日志追踪
+	// zipkinPropagator := zipkin.NewZipkinB3HTTPHeaderPropagator()
 
-	//tracer, closer, err := cfg.NewTracer(
+	// tracer, closer, err := cfg.NewTracer(
 	//	config.Injector(opentracing.HTTPHeaders, zipkinPropagator),
 	//	config.Extractor(opentracing.HTTPHeaders, zipkinPropagator),
 	//
@@ -33,11 +34,9 @@ func New(conf Config) (tracer opentracing.Tracer, closer io.Closer) {
 	//	config.Extractor(opentracing.TextMap, zipkinPropagator),
 	//
 	//	config.ZipkinSharedRPCSpan(true),
-	//)
+	// )
 
-
-
-	//时候用 jaeger 日志追踪
+	// 时候用 jaeger 日志追踪
 	tracer, closer, err := cfg.NewTracer()
 
 	if err != nil {
@@ -71,7 +70,7 @@ func (*NullCloser) Close() error {
 	return nil
 }
 
-//TraceIdSpanFromContext 从context中获取traceId
+// TraceIdSpanFromContext 从context中获取traceId
 func TraceIdSpanFromContext(ctx context.Context) (traceId string) {
 	span := opentracing.SpanFromContext(ctx)
 	if span != nil {

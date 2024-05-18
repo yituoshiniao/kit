@@ -5,14 +5,15 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	v1 "github.com/yituoshiniao/kit/xdb/v1"
-	"github.com/yituoshiniao/kit/xlog"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	_ "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	glogger "gorm.io/gorm/logger"
 	"moul.io/zapgorm2"
+
+	v1 "github.com/yituoshiniao/kit/xdb/v1"
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 var defaultDbOptions = dbOptions{
@@ -38,17 +39,17 @@ func NewDb(conf v1.Config, zapLogger *zap.Logger, opts ...DbOption) (db *gorm.DB
 	}
 
 	logger := zapgorm2.New(zapLogger)
-	logger.LogLevel = glogger.Info //开启log记录
+	logger.LogLevel = glogger.Info // 开启log记录
 	logger.SetAsDefault()          // optional: configure gorm to use this zapgorm.Logger for callbacks
 
-	//dsn := fmt.Sprintf(
+	// dsn := fmt.Sprintf(
 	//	"%s:%s@(%s)/%s?charset=%s&parseTime=%t&loc=%s&multiStatements=%t&timeout=%ds",
-	//)
+	// )
 	// 参考 https://github.com/go-sql-driver/mysql#dsn-data-source-name 获取详情
 	var err error
 	db, err = gorm.Open(mysql.Open(conf.Dsn), &gorm.Config{
-		Logger: glogger.Discard, //禁用日志输出
-		//Logger:                 logger, //设置log 使用zaplog
+		Logger: glogger.Discard, // 禁用日志输出
+		// Logger:                 logger, //设置log 使用zaplog
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
@@ -73,7 +74,7 @@ func NewDb(conf v1.Config, zapLogger *zap.Logger, opts ...DbOption) (db *gorm.DB
 		panic(err)
 	}
 
-	//err = db.Use(
+	// err = db.Use(
 	//	prometheus.New(prometheus.Config{
 	//		DBName:          conf.DBName,   // 使用 `DBName` 作为指标 label
 	//		RefreshInterval: conf.RefreshInterval,             // 指标刷新频率（默认为 15 秒）
@@ -84,7 +85,7 @@ func NewDb(conf v1.Config, zapLogger *zap.Logger, opts ...DbOption) (db *gorm.DB
 	//			},
 	//		}, // 用户自定义指标
 	//	}),
-	//)
+	// )
 
 	sqlDB.SetMaxIdleConns(conf.MaxIdle)
 	sqlDB.SetMaxOpenConns(conf.MaxOpen)

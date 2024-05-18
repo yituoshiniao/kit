@@ -4,10 +4,11 @@
 package xlog
 
 import (
-	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
 	"syscall"
+
+	"github.com/pkg/errors"
 )
 
 const panicFileName = "/panic.log"

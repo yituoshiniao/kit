@@ -2,12 +2,13 @@ package hserver
 
 import (
 	"encoding/json"
+	"net/http"
+	"time"
+
 	"github.com/opentracing/opentracing-go"
 	"github.com/urfave/negroni"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/status"
-	"net/http"
-	"time"
 )
 
 type ErrRespFactory func(err error, r *http.Request) (body []byte, contentType string)
