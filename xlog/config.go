@@ -13,7 +13,16 @@
 
 package xlog
 
-import "go.uber.org/zap/zapcore"
+import (
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+)
+
+var defaultOptions = Config{
+	Level:  zap.DebugLevel.String(),
+	Format: "plain",
+	Stdout: true,
+}
 
 // Config serializes log related config in toml/json.
 type Config struct {

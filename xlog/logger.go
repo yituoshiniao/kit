@@ -24,17 +24,11 @@ const (
 
 type LogRotate string
 
-func Set(conf Config) (func(), error) {
-	logger, err := New(conf)
-	if err != nil {
-		return func() {}, err
-	}
-	return func() {
-		_ = logger.Sync()
-	}, nil
+func init() {
+	initLog(defaultOptions)
 }
 
-func New(conf Config) (*zap.Logger, error) {
+func initLog(conf Config) (*zap.Logger, error) {
 	tee := []zapcore.Core{getBaseCore(conf)}
 	// 自定义日志
 	dPanicCore := getDPanicLevelCore(conf)
@@ -74,8 +68,22 @@ func New(conf Config) (*zap.Logger, error) {
 		S(context.Background()).Warnw("recordPanic错误", "err", err)
 		return nil, err
 	}
-
 	return logger, nil
+}
+
+func Set(conf Config) (func(), error) {
+	logger, err := New(conf)
+	if err != nil {
+		return func() {}, err
+	}
+	return func() {
+		_ = logger.Sync()
+	}, nil
+}
+
+func New(conf Config) (*zap.Logger, error) {
+	logger, err := initLog(conf)
+	return logger, err
 }
 
 func getBaseCore(conf Config) zapcore.Core {
