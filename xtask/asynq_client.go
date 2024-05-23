@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hibiken/asynq"
+
 	"github.com/yituoshiniao/kit/xlog"
 	"github.com/yituoshiniao/kit/xrds"
 )

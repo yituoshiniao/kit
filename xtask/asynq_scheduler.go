@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
+
 	"github.com/yituoshiniao/kit/xlog"
 	"github.com/yituoshiniao/kit/xrds"
 )

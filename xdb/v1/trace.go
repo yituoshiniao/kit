@@ -4,18 +4,20 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"reflect"
+	"strings"
+	"time"
+	"unicode"
+
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/jinzhu/gorm"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
+
 	"github.com/yituoshiniao/kit/xlog"
 	"github.com/yituoshiniao/kit/xtrace"
-	"go.uber.org/zap"
-	"reflect"
-	"strings"
-	"time"
-	"unicode"
 )
 
 const (
@@ -91,7 +93,7 @@ func (c *callbacks) before(scope *gorm.Scope) {
 	parentSpan := val.(opentracing.Span)
 	tr := parentSpan.Tracer()
 	sp := tr.StartSpan("mysql", opentracing.ChildOf(parentSpan.Context()))
-	//ext.DBType.Set(sp, "sql")
+	// ext.DBType.Set(sp, "sql")
 
 	val, ok = scope.Get(ctxKey)
 	if ok {
@@ -144,8 +146,8 @@ func (c *callbacks) after(scope *gorm.Scope, operation string) {
 			ext.Error.Set(sp, false)
 		}
 		ext.DBType.Set(sp, "sql")
-		//ext.DBStatement.Set(sp, scope.SQL)
-		//sp.SetTag("db.vars", sqlVars)
+		// ext.DBStatement.Set(sp, scope.SQL)
+		// sp.SetTag("db.vars", sqlVars)
 		sp.LogKV("db.sql", scope.SQL)
 		sp.LogKV("db.vars", sqlVars)
 		sp.SetTag("db.op", operation)

@@ -2,10 +2,11 @@ package hserver
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"net/http"
 )
 
 type RecoveryMiddleware struct {

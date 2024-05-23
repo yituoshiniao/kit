@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
+
 	"github.com/yituoshiniao/kit/xlog"
 	"github.com/yituoshiniao/kit/xrds"
 )
@@ -43,7 +44,7 @@ func NewAsynqServer(ctx context.Context, conf xrds.Config) (client *asynq.Server
 		},
 		asynq.Config{
 			// 并发执行的worker数量, 默认启动的worker数量是服务器的CPU个数。
-			//Concurrency: 5,
+			// Concurrency: 5,
 			// 队列优先级
 			Queues: map[string]int{
 				string(CriticalQueue):       50,
@@ -58,11 +59,11 @@ func NewAsynqServer(ctx context.Context, conf xrds.Config) (client *asynq.Server
 			ErrorHandler: asynq.ErrorHandlerFunc(reportError),
 			Logger:       NewLogger(ctx),
 
-			//组聚合参数
+			// 组聚合参数
 			GroupAggregator:  asynq.GroupAggregatorFunc(aggregate),
-			GroupGracePeriod: 10 * time.Second, //组的优雅延迟时间, 每10秒聚合一次
-			GroupMaxDelay:    30 * time.Second, //组的最大延迟时间
-			GroupMaxSize:     10,               //组的最大尺寸
+			GroupGracePeriod: 10 * time.Second, // 组的优雅延迟时间, 每10秒聚合一次
+			GroupMaxDelay:    30 * time.Second, // 组的最大延迟时间
+			GroupMaxSize:     10,               // 组的最大尺寸
 		},
 	)
 	return client
@@ -81,7 +82,7 @@ func aggregate(group string, tasks []*asynq.Task) *asynq.Task {
 		b.WriteString("\n")
 	}
 	return asynq.NewTask(AggregateTypeName, []byte(b.String()))
-	//return asynq.NewTask("email:groupDeliver", []byte(b.String()))
+	// return asynq.NewTask("email:groupDeliver", []byte(b.String()))
 }
 
 // reportError 错误回调处理函数
@@ -89,7 +90,7 @@ func reportError(ctx context.Context, task *asynq.Task, err error) {
 	retried, _ := asynq.GetRetryCount(ctx)
 	maxRetry, _ := asynq.GetMaxRetry(ctx)
 	if retried >= maxRetry {
-		//一旦一个任务耗尽它的重试次数，任务将转为Archived状态
+		// 一旦一个任务耗尽它的重试次数，任务将转为Archived状态
 		xlog.S(ctx).Errorw("重试次数已用完", "err", err, "task", string(task.Payload()))
 	}
 

@@ -2,14 +2,16 @@ package v2
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/opentracing/opentracing-go"
 	opentracinglog "github.com/opentracing/opentracing-go/log"
-	"github.com/yituoshiniao/kit/xlog"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"strings"
-	"time"
+
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 const (
@@ -21,7 +23,7 @@ var (
 	// span.Tag keys
 	_tableTagKey = keyWithPrefix("table")
 	// span.Log keys
-	//_errorLogKey        = keyWithPrefix("error")
+	// _errorLogKey        = keyWithPrefix("error")
 	_resultLogKey       = keyWithPrefix("result")
 	_sqlLogKey          = keyWithPrefix("sql")
 	_rowsAffectedLogKey = keyWithPrefix("rowsAffected")
@@ -67,7 +69,7 @@ func (p opentracingPlugin) extractAfter(db *gorm.DB) {
 	}
 
 	sTime, timeOk := db.InstanceGet(timeMsKey)
-	//记录日志 ctx
+	// 记录日志 ctx
 	v, okCtx := db.InstanceGet(ctxKey)
 	if okCtx {
 		ctx := v.(context.Context)
@@ -85,7 +87,7 @@ func (p opentracingPlugin) extractAfter(db *gorm.DB) {
 	}
 
 	// extract sp from db context
-	//sp := opentracing.SpanFromContext(db.Statement.Context)
+	// sp := opentracing.SpanFromContext(db.Statement.Context)
 	v, ok := db.InstanceGet(opentracingSpanKey)
 	if !ok || v == nil {
 		xlog.S(context.TODO()).Debug("InstanceGet opentracingSpanKey 错误")
@@ -138,8 +140,8 @@ func log(sp opentracing.Span, db *gorm.DB, verbose bool, logSqlVariables bool) {
 		fields = append(fields, opentracinglog.Error(err))
 	}
 
-	//上报结果数据
-	//if verbose && db.Statement.Dest != nil {
+	// 上报结果数据
+	// if verbose && db.Statement.Dest != nil {
 	//	// DONE(@yeqown) fill result fields into span log
 	//	// FIXED(@yeqown) db.Statement.Dest still be metatable now ?
 	//	v, err := json.Marshal(db.Statement.Dest)
@@ -148,7 +150,7 @@ func log(sp opentracing.Span, db *gorm.DB, verbose bool, logSqlVariables bool) {
 	//	} else {
 	//		xlog.S(context.Background()).Errorw("could not marshal db.Statement.Dest", "err", err)
 	//	}
-	//}
+	// }
 
 	sp.LogFields(fields...)
 }
@@ -172,14 +174,14 @@ func appendLogSql(db *gorm.DB, verbose bool, logSqlVariables bool) (logField []z
 	}
 
 	logField = append(logField, zap.Int64(_rowsAffectedLogKey, db.Statement.RowsAffected))
-	//logField = append(logField, zap.Reflect("Vars", db.Statement.Vars))
+	// logField = append(logField, zap.Reflect("Vars", db.Statement.Vars))
 	logField = append(logField, zap.String("operation", strings.ToUpper(strings.Split(db.Statement.SQL.String(), " ")[0])))
 
-	//操作类型  SELECT, DELETE , CREATE, ALTER, INSET 等
-	//fields["Schema.Table"] = db.Statement.Schema.Table
+	// 操作类型  SELECT, DELETE , CREATE, ALTER, INSET 等
+	// fields["Schema.Table"] = db.Statement.Schema.Table
 
-	//记录返回数据
-	//if verbose && db.Statement.Dest != nil {
+	// 记录返回数据
+	// if verbose && db.Statement.Dest != nil {
 	//	// DONE(@yeqown) fill result fields into span log
 	//	// FIXED(@yeqown) db.Statement.Dest still be metatable now ?
 	//	v, err := json.Marshal(db.Statement.Dest)
@@ -188,7 +190,7 @@ func appendLogSql(db *gorm.DB, verbose bool, logSqlVariables bool) (logField []z
 	//	} else {
 	//		db.Logger.Error(context.Background(), "could not marshal db.Statement.Dest: %v", err)
 	//	}
-	//}
+	// }
 
 	return
 }

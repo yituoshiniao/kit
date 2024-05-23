@@ -1,11 +1,12 @@
 package xrds
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"strconv"
-	"time"
 )
 
 var MetricsEnable bool

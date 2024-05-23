@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
+	"gopkg.in/yaml.v2"
+
 	"github.com/yituoshiniao/kit/xlog"
 	"github.com/yituoshiniao/kit/xrds"
-	"gopkg.in/yaml.v2"
 )
 
 type AsynqConfig struct {
@@ -79,12 +80,12 @@ func (p *FileBasedConfigProvider) GetConfigs() ([]*asynq.PeriodicTaskConfig, err
 	var configs []*asynq.PeriodicTaskConfig
 
 	if !p.enablePeriodicTaskSched {
-		//保证注册的调度任务只有一个，否则会出现重复调度
+		// 保证注册的调度任务只有一个，否则会出现重复调度
 		xlog.S(p.ctx).Info("不需要注册动态调度任务")
 		return configs, nil
 	}
 
-	//task 选项设置
+	// task 选项设置
 	opts := []asynq.Option{
 		asynq.Retention(time.Hour * 72),
 		asynq.Queue(string(GroupSchedulerQueue)),

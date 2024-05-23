@@ -15,9 +15,10 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
-	"github.com/yituoshiniao/kit/xlog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 const (
@@ -68,14 +69,14 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 		zap.ByteString("Body", body),
 	)
 
-	//trace
+	// trace
 	ext.Component.Set(span, "http-client")
 	ext.HTTPUrl.Set(span, req.URL.String())
 	ext.HTTPMethod.Set(span, req.Method)
 	ext.PeerHostname.Set(span, req.URL.Hostname())
 	ext.PeerPort.Set(span, atouint16(req.URL.Port()))
 
-	//发送请求
+	// 发送请求
 	if t.rt != nil {
 		resp, err = t.rt.RoundTrip(newReq)
 	} else {
@@ -83,7 +84,7 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 	}
 	if err != nil {
 		ext.Error.Set(span, true)
-		//span.LogKV("error-信息", err)
+		// span.LogKV("error-信息", err)
 		span.LogFields(log.String("[http client] error错误信息", err.Error()))
 	}
 	if resp != nil {
@@ -144,7 +145,7 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 		statusCodeF,
 		contentLengthF,
 		timeField,
-		//l.durationFunc(time.Since(startTime)),
+		// l.durationFunc(time.Since(startTime)),
 		respF,
 		path,
 		rawQuery,

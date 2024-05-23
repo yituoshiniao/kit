@@ -1,12 +1,14 @@
 package hserver
 
 import (
-	"github.com/yituoshiniao/kit/xlog"
 	"context"
+	"net/http"
+
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
-	"net/http"
+
+	"github.com/yituoshiniao/kit/xlog"
 )
 
 var (

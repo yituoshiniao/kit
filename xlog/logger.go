@@ -9,9 +9,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
 	"github.com/tchap/zapext/zapsentry"
-	"github.com/yituoshiniao/kit/xlog/rotate"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/yituoshiniao/kit/xlog/rotate"
 )
 
 const (

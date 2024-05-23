@@ -2,10 +2,12 @@ package v1
 
 import (
 	"database/sql/driver"
-	"github.com/pkg/errors"
-	"github.com/yituoshiniao/kit/xslice"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
+
+	"github.com/yituoshiniao/kit/xslice"
 )
 
 func ScanJoinStrtoInt64(val interface{}) ([]int64, error) {

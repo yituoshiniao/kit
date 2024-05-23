@@ -2,10 +2,12 @@ package hclient
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/dghubble/sling"
 	"github.com/pkg/errors"
+
 	"github.com/yituoshiniao/kit/xlog"
-	"net/http"
 )
 
 type ErrStatus struct {
@@ -21,7 +23,7 @@ type StatusCodeGuardDoer struct {
 	doer sling.Doer
 }
 
-//判断http-code是否正常
+// 判断http-code是否正常
 func (t StatusCodeGuardDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	resp, err = t.doer.Do(req)
 

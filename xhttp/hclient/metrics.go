@@ -1,10 +1,11 @@
 package hclient
 
 import (
+	"net/http"
+
 	"github.com/dghubble/sling"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
-	"net/http"
 )
 
 type MetricsDoer struct {
@@ -37,7 +38,7 @@ func InitHttpClientAPICounterMetrics() {
 		})
 }
 
-//Do 普罗米修斯监控
+// Do 普罗米修斯监控
 func (t MetricsDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	resp, err = t.doer.Do(req)
 	status := "unknown"

@@ -1,8 +1,9 @@
 package hserver
 
 import (
-	"github.com/yituoshiniao/kit/xtrace"
 	"net/http"
+
+	"github.com/yituoshiniao/kit/xtrace"
 )
 
 type TraceIdMiddleware struct{}

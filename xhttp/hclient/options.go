@@ -2,11 +2,12 @@ package hclient
 
 import (
 	"crypto/tls"
+	"net/http"
+	"time"
+
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"net/http"
-	"time"
 )
 
 var defaultServerOptions = options{
@@ -80,7 +81,7 @@ func WithInsecure() Option {
 	}
 }
 
-//WithMetrics 是否采集接口请求
+// WithMetrics 是否采集接口请求
 func WithMetrics(isMetrics bool) Option {
 	return func(o *options) {
 		o.metrics = isMetrics
