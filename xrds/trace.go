@@ -7,15 +7,12 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"github.com/yituoshiniao/kit/xlog"
 	"go.opentelemetry.io/otel/trace"
-
 	// "github.com/go-redis/redis/v8" // 确保使用 v8 或相应版本
-
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
-
-	"github.com/yituoshiniao/kit/xlog"
 )
 
 var tracer = otel.Tracer("redis-client") // Initialize your tracer
