@@ -1,20 +1,16 @@
 package xtrace
 
 import (
-	"context"
 	"log"
 	"os"
-	"strings"
-
-	"go.opentelemetry.io/otel/propagation"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"google.golang.org/grpc/credentials"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
 
 func NewTracerProvider(conf OtelConfig) (*sdktrace.TracerProvider, error) {
@@ -24,27 +20,53 @@ func NewTracerProvider(conf OtelConfig) (*sdktrace.TracerProvider, error) {
 	// 	stdouttrace.WithPrettyPrint(),
 	// )
 
-	insecure := conf.Insecure
-	collectorURL := conf.ReporterLocalAgentHostPort
+	// 创建 Jaeger exporter
+	ep := "http://localhost:14268/api/traces"
+	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(ep)))
+
 	serviceName := conf.ServerName
 	SamplerRate := conf.SamplerParam
 
-	var secureOption otlptracegrpc.Option
-
-	if strings.ToLower(insecure) == "false" || insecure == "0" || strings.ToLower(insecure) == "f" {
-		secureOption = otlptracegrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
-	} else {
-		secureOption = otlptracegrpc.WithInsecure()
-	}
-
-	ctx := context.Background()
-	exporter, err := otlptrace.New(
-		ctx,
-		otlptracegrpc.NewClient(
-			secureOption,
-			otlptracegrpc.WithEndpoint(collectorURL),
+	// Record information about this application in a Resource.
+	res, _ := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String(serviceName),
+			// semconv.ServiceVersionKey.String("v0.1.0"),
+			// attribute.String("environment", "test"),
 		),
 	)
+
+	// serviceName := conf.ServerName
+	// SamplerRate := conf.SamplerParam
+	// insecure := conf.Insecure
+	// collectorURL := conf.ReporterLocalAgentHostPort
+
+	//
+	// var secureOption otlptracegrpc.Option
+	//
+	// if strings.ToLower(insecure) == "false" || insecure == "0" || strings.ToLower(insecure) == "f" {
+	// 	secureOption = otlptracegrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
+	// } else {
+	// 	secureOption = otlptracegrpc.WithInsecure()
+	// }
+	//
+	// ctx := context.Background()
+	// exporter, err := otlptrace.New(
+	// 	ctx,
+	// 	otlptracegrpc.NewClient(
+	// 		secureOption,
+	// 		otlptracegrpc.WithEndpoint(collectorURL),
+	// 	),
+	// )
+
+	// resource := resource.NewWithAttributes(
+	// 	"example-service",
+	// 	attribute.String("service.name", serviceName),
+	// 	attribute.String("library.language", "go"),
+	// 	hostnameKeyValue(),
+	// )
 
 	if err != nil {
 		log.Printf("初始化  TracerProvider 失败 err:%s", err)
@@ -60,14 +82,7 @@ func NewTracerProvider(conf OtelConfig) (*sdktrace.TracerProvider, error) {
 		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(SamplerRate))),
 
 		// sdktrace.WithSampler(sdktrace.TraceIDRatioBased(0.8)), // 采样率配置
-		sdktrace.WithResource(
-			resource.NewWithAttributes(
-				"example-service",
-				attribute.String("service.name", serviceName),
-				attribute.String("library.language", "go"),
-				hostnameKeyValue(),
-			),
-		),
+		sdktrace.WithResource(res),
 	)
 
 	// 设置全局 Tracer 提供者

@@ -3,7 +3,6 @@ package defaultclient
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -12,9 +11,7 @@ import (
 	"time"
 
 	"github.com/onsi/gomega/gbytes"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
-	"github.com/opentracing/opentracing-go/log"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -26,15 +23,19 @@ const (
 	ContentTypeJson = "Content-Type"
 )
 
-// RoundTrip implements a transport that will count requests.
+// RoundTrip 实现一个运输工具来计数请求。
 func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error) {
 	startTime := time.Now()
 	sTime := startTime.UnixNano() / 1e6
 	var respBody []byte
 	atomic.AddInt64(&t.N, 1)
-	span, ctx := opentracing.StartSpanFromContext(req.Context(), t.serverName)
+
+	// 从上下文中创建 Span
+	ctx, span := t.tracer.Start(req.Context(), t.serverName)
+	defer span.End()
+
+	// 更新请求上下文
 	req = req.WithContext(ctx)
-	defer span.Finish()
 
 	newReq := req
 	var body []byte
@@ -47,7 +48,7 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 		buf := gbytes.NewBuffer()
 		_, err := buf.Write(newBody)
 		if err != nil {
-			xlog.S(ctx).Warnw("buf.Write--错误", "err", err)
+			xlog.S(ctx).Warnw("buf.Write 错误", "err", err)
 		}
 		newReq.Body = buf
 	}
@@ -55,7 +56,7 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 	tmpFields := []zap.Field{
 		zap.String(xlog.MethodPath, newReq.URL.Path),
 	}
-	xlog.LE(newReq.Context(), tmpFields).Debug("["+t.serverName+"]"+"发送请求",
+	xlog.LE(newReq.Context(), tmpFields).Debug("["+t.serverName+"] 发送请求",
 		zap.String("Host", req.URL.Host),
 		zap.String("Method", req.Method),
 		zap.String("Scheme", req.URL.Scheme),
@@ -70,11 +71,13 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 	)
 
 	// trace
-	ext.Component.Set(span, "http-client")
-	ext.HTTPUrl.Set(span, req.URL.String())
-	ext.HTTPMethod.Set(span, req.Method)
-	ext.PeerHostname.Set(span, req.URL.Hostname())
-	ext.PeerPort.Set(span, atouint16(req.URL.Port()))
+	span.SetAttributes(
+		attribute.String("component", "http-client"),
+		attribute.String("http.url", req.URL.String()),
+		attribute.String("http.method", req.Method),
+		attribute.String("peer.hostname", req.URL.Hostname()),
+		attribute.String("peer.port", req.URL.Port()),
+	)
 
 	// 发送请求
 	if t.rt != nil {
@@ -83,22 +86,21 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 		resp, err = http.DefaultTransport.RoundTrip(newReq)
 	}
 	if err != nil {
-		ext.Error.Set(span, true)
-		// span.LogKV("error-信息", err)
-		span.LogFields(log.String("[http client] error错误信息", err.Error()))
+		span.RecordError(err)
+		span.SetAttributes(attribute.Bool("error", true))
 	}
 	if resp != nil {
-		ext.HTTPStatusCode.Set(span, uint16(resp.StatusCode))
+		span.SetAttributes(attribute.Int("http.status_code", resp.StatusCode))
 	}
 
 	if resp != nil && resp.Body != nil {
 		b, bErr := io.ReadAll(resp.Body)
 		if bErr != nil {
-			zap.L().Error("读取req.body失败", zap.Error(bErr))
+			zap.L().Error("读取 resp.Body 失败", zap.Error(bErr))
 			return nil, bErr
 		} else {
 			respBody = b
-			resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 		}
 	}
 
@@ -124,7 +126,6 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 		statusF = zap.String("status", resp.Status)
 		statusCodeF = zap.Int("statusCode", resp.StatusCode)
 		contentLengthF = zap.Int64("contentLength", resp.ContentLength)
-
 	}
 
 	if resp != nil && strings.Contains(resp.Header.Get(ContentTypeJson), HeaderJSON) {
@@ -145,7 +146,6 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 		statusCodeF,
 		contentLengthF,
 		timeField,
-		// l.durationFunc(time.Since(startTime)),
 		respF,
 		path,
 		rawQuery,

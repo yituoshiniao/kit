@@ -3,33 +3,34 @@ package xrds
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
+	"go.opentelemetry.io/otel/trace"
+
+	// "github.com/go-redis/redis/v8" // 确保使用 v8 或相应版本
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 
 	"github.com/yituoshiniao/kit/xlog"
 )
+
+var tracer = otel.Tracer("redis-client") // Initialize your tracer
 
 // Trace 为redis.client 增加 trace 功能 ，返回 cloned client.
 func Trace(ctx context.Context, client *redis.Client) *redis.Client {
 	if ctx == nil {
 		return client
 	}
-	parentSpan := opentracing.SpanFromContext(ctx)
-	if parentSpan == nil {
-		xlog.S(ctx).Debugw("parentSpan err", "err", "parentSpan nil")
-		return client
-	}
 
 	ctxClient := client.WithContext(ctx)
 	opts := ctxClient.Options()
-	ctxClient.WrapProcess(process(ctx, parentSpan, opts))
-	ctxClient.WrapProcessPipeline(processPipeline(ctx, parentSpan, opts))
+
+	ctxClient.WrapProcess(process(ctx, opts))
+	ctxClient.WrapProcessPipeline(processPipeline(ctx, opts))
 
 	if MetricsEnable {
 		ctxClient.WrapProcess(processMetrics(ctx))
@@ -39,27 +40,40 @@ func Trace(ctx context.Context, client *redis.Client) *redis.Client {
 }
 
 // process 原生 process 包装器，增加trace span 埋点功能.
-func process(ctx context.Context, parentSpan opentracing.Span, opts *redis.Options) func(oldProcess func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
+func process(ctx context.Context, opts *redis.Options) func(oldProcess func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
 	return func(oldProcess func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
 		return func(cmd redis.Cmder) error {
 			sTime := time.Now()
-			span, tmpCtx := startSpan(ctx, parentSpan, opts, "redis", cmd.Name())
-			span.SetTag("cmd.Arsg", cmd.Args())
-			defer span.Finish()
+
+			// Start a new span
+			ctx, span := tracer.Start(ctx, "redis "+cmd.Name())
+			defer span.End()
+
+			// // Set attributes
+			// span.SetAttributes(
+			// 	attribute.String("cmd.args", fmt.Sprintf("%v", cmd.Args())),
+			// )
+
+			span.AddEvent(
+				"Redis executed",
+				trace.WithAttributes(
+					attribute.String("cmd.args", fmt.Sprintf("%v", cmd.Args())),
+				),
+			)
 
 			defer func() {
-				fields := []zap.Field{
-					zap.String("cmd.Name", cmd.Name()),
-					zap.Any("cmd.Args", cmd.Args()),
-					zap.String("rds耗时", time.Now().Sub(sTime).String()),
-				}
-				xlog.L(tmpCtx).Debug("process redis 执行命令", fields...)
+				xlog.L(ctx).Debug("process redis 执行命令", zap.String("cmd.Name", cmd.Name()), zap.Any("cmd.Args", cmd.Args()), zap.String("rds耗时", time.Since(sTime).String()))
 			}()
 
 			obj := oldProcess(cmd)
 			if cmd.Err() != nil {
-				ext.Error.Set(span, true)
-				span.SetTag("cmd.Err", cmd.Err())
+				// 记录错误在log中
+				span.RecordError(cmd.Err())
+				// tag 标签错误
+				span.SetAttributes(attribute.String("cmd.Err", cmd.Err().Error()))
+				// 错误 告警表示，红色感叹号
+				span.SetAttributes(attribute.Bool("error", true))
+
 			}
 			return obj
 		}
@@ -67,15 +81,14 @@ func process(ctx context.Context, parentSpan opentracing.Span, opts *redis.Optio
 }
 
 // processPipeline 原生 processPipeline 包装器，增加trace span 埋点功能.
-func processPipeline(ctx context.Context, parentSpan opentracing.Span, opts *redis.Options) func(oldProcess func(cmds []redis.Cmder) error) func(cmds []redis.Cmder) error {
+func processPipeline(ctx context.Context, opts *redis.Options) func(oldProcess func(cmds []redis.Cmder) error) func(cmds []redis.Cmder) error {
 	return func(oldProcess func(cmds []redis.Cmder) error) func(cmds []redis.Cmder) error {
 		return func(cmds []redis.Cmder) error {
 			commands := cmdsName(cmds)
-			span, tmpCtx := startSpan(ctx, parentSpan, opts, "redis", commands)
-			defer span.Finish()
-			defer func() {
-				xlog.L(tmpCtx).Debug("processPipeline redis 执行命令", zap.String("commands", commands))
-			}()
+			ctx, span := tracer.Start(ctx, "redis "+commands)
+			defer span.End()
+
+			xlog.L(ctx).Debug("processPipeline redis 执行命令", zap.String("commands", commands))
 			return oldProcess(cmds)
 		}
 	}
@@ -85,21 +98,7 @@ func processPipeline(ctx context.Context, parentSpan opentracing.Span, opts *red
 func cmdsName(cmds []redis.Cmder) string {
 	names := make([]string, len(cmds))
 	for i, cmd := range cmds {
-		// names[i] = cmd.Name()
 		names[i] = fmt.Sprintf("cmd.Name:%s; cmd.args:%v", cmd.Name(), cmd.Args())
 	}
 	return strings.Join(names, " -> ")
-}
-
-// startSpan 开启并返回 ChildSpan，记得在调用方执行 defer span.Finish().
-func startSpan(ctx context.Context, parentSpan opentracing.Span, opts *redis.Options, operationName, method string) (opentracing.Span, context.Context) {
-	// tr := parentSpan.Tracer()
-	// sp := tr.StartSpan(operationName, opentracing.ChildOf(parentSpan.Context()))
-	sp, tmpCtx := opentracing.StartSpanFromContext(ctx, fmt.Sprintf("%s-%s", operationName, method))
-	ext.DBType.Set(sp, "redis")
-	ext.PeerAddress.Set(sp, opts.Addr)
-	ext.DBInstance.Set(sp, strconv.Itoa(opts.DB))
-	ext.SpanKind.Set(sp, "client")
-	sp.SetTag("db.op", method)
-	return sp, tmpCtx
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dghubble/sling"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -24,7 +25,13 @@ func New(opts ...Option) *sling.Sling {
 
 	// 先日志 修复 cancel 无法被记录情况
 	doer = LogDoer{doer: client, durationFunc: o.durationFunc}
-	doer = TraceDoer{doer: doer, operationName: o.serviceName}
+
+	doer = TraceDoer{
+		doer:          doer,
+		operationName: o.serviceName,
+		tracer:        otel.Tracer("http-client"),
+		propagator:    otel.GetTextMapPropagator(),
+	}
 
 	if o.metrics {
 		doer = MetricsDoer{doer: doer}
@@ -38,7 +45,7 @@ func New(opts ...Option) *sling.Sling {
 	return sling.New().Base(o.target).Doer(doer)
 }
 
-// Deprecated
+// NewClient Deprecated
 // 请使用 hclient.New()
 func NewClient(opts ...Option) *sling.Sling {
 	return New(opts...)

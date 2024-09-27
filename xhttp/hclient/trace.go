@@ -2,69 +2,72 @@ package hclient
 
 import (
 	"fmt"
-	"github.com/dghubble/sling"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
-	opentracinglog "github.com/opentracing/opentracing-go/log"
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	"net/http"
+
+	"github.com/dghubble/sling"
+	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type TraceDoer struct {
 	doer          sling.Doer
 	operationName string
+	tracer        trace.Tracer
+	propagator    propagation.TextMapPropagator
 }
 
 func (t TraceDoer) Do(req *http.Request) (resp *http.Response, err error) {
-	parentSpan := opentracing.SpanFromContext(req.Context())
-	if parentSpan != nil {
-		span := opentracing.StartSpan(
-			t.operationName,
-			opentracing.ChildOf(parentSpan.Context()))
+	ctx := req.Context()
+	var span trace.Span
 
-		//body, _ := ioutil.ReadAll(req.Body)
-		//str := fmt.Sprintf( "%s--- reqbody--%s", req.URL.String(), ext.SpanKindEnum(body))
-		//ext.HTTPUrl.Set(span, str)
+	// 从上下文中开始一个新的 Span
+	ctx, span = t.tracer.Start(ctx, t.operationName)
+	defer span.End()
 
-		ext.HTTPUrl.Set(span, req.URL.String())
-		ext.HTTPMethod.Set(span, req.Method)
-		//ext.SpanKind.Set(span, "client")
-		ext.SpanKindRPCClient.Set(span)
+	// 设置 HTTP 请求相关的属性
+	span.SetAttributes(
+		attribute.String("http.url", req.URL.String()),
+		attribute.String("http.method", req.Method),
+		attribute.String("span.kind", "client"),
+	)
 
-		defer span.Finish()
+	// 注入当前 Span 的上下文到 HTTP 请求头中
+	t.propagator.Inject(ctx, propagation.HeaderCarrier(req.Header))
 
-		//注入日志追踪信息
-		// Transmit the span's TraceContext as HTTP headers on our
-		// outbound request.
-		err = opentracing.GlobalTracer().Inject(
-			span.Context(),
-			opentracing.HTTPHeaders,
-			opentracing.HTTPHeadersCarrier(req.Header))
+	// 执行请求
+	resp, err = t.doer.Do(req)
 
-		if err != nil {
-			zap.L().Error("OpenTracing Inject Err", zap.String("err", err.Error()))
-			return nil, err
-		}
-
-		resp, err = t.doer.Do(req)
-
-		if resp != nil {
-			ext.HTTPStatusCode.Set(span, uint16(resp.StatusCode))
-		}
-		if err != nil {
-			ext.Error.Set(span, true)
-			span.LogFields(opentracinglog.String("error", err.Error()))
-		}
-		if resp != nil && (resp.StatusCode < 200 || resp.StatusCode > 299) {
-			ext.Error.Set(span, true)
-			tmpErr := errors.New(fmt.Sprintf("http code错误码: %d", resp.StatusCode))
-			//span.LogKV("error", resp) //log 字段 可记录更多日志，tag 字段长度限制
-			span.LogFields(opentracinglog.String("error", tmpErr.Error()))
-		}
-	} else {
-		resp, err = t.doer.Do(req)
+	// 设置 HTTP 状态码
+	if resp != nil {
+		span.SetAttributes(attribute.Int("http.status_code", resp.StatusCode))
 	}
 
-	return
+	// 错误处理
+	if err != nil {
+		span.RecordError(err)
+		span.SetAttributes(attribute.Bool("error", true))
+	}
+
+	if resp != nil && (resp.StatusCode < 200 || resp.StatusCode > 299) {
+		span.SetAttributes(attribute.Bool("error", true))
+		tmpErr := errors.New(fmt.Sprintf("HTTP 错误码: %d", resp.StatusCode))
+		span.RecordError(tmpErr)
+		
+		span.SetAttributes(attribute.String("err", tmpErr.Error()))
+
+	}
+
+	return resp, err
+}
+
+// NewTraceDoer 创建一个新的 TraceDoer，初始化 tracer 和 propagator
+func NewTraceDoer(doer sling.Doer, operationName string, tracer trace.Tracer, propagator propagation.TextMapPropagator) TraceDoer {
+	return TraceDoer{
+		doer:          doer,
+		operationName: operationName,
+		tracer:        tracer,
+		propagator:    propagator,
+	}
 }
