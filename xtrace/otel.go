@@ -1,16 +1,20 @@
 package xtrace
 
 import (
+	"context"
 	"log"
 	"os"
+	"strings"
+	// "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"google.golang.org/grpc/credentials"
 )
 
 func NewTracerProvider(conf OtelConfig) (*sdktrace.TracerProvider, error) {
@@ -20,53 +24,52 @@ func NewTracerProvider(conf OtelConfig) (*sdktrace.TracerProvider, error) {
 	// 	stdouttrace.WithPrettyPrint(),
 	// )
 
-	// 创建 Jaeger exporter
-	ep := "http://localhost:14268/api/traces"
-	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(ep)))
-
-	serviceName := conf.ServerName
-	SamplerRate := conf.SamplerParam
-
-	// Record information about this application in a Resource.
-	res, _ := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(serviceName),
-			// semconv.ServiceVersionKey.String("v0.1.0"),
-			// attribute.String("environment", "test"),
-		),
-	)
+	// // 创建 Jaeger exporter
+	// ep := "http://localhost:14268/api/traces"
+	// exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(ep)))
 
 	// serviceName := conf.ServerName
 	// SamplerRate := conf.SamplerParam
-	// insecure := conf.Insecure
-	// collectorURL := conf.ReporterLocalAgentHostPort
-
 	//
-	// var secureOption otlptracegrpc.Option
-	//
-	// if strings.ToLower(insecure) == "false" || insecure == "0" || strings.ToLower(insecure) == "f" {
-	// 	secureOption = otlptracegrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
-	// } else {
-	// 	secureOption = otlptracegrpc.WithInsecure()
-	// }
-	//
-	// ctx := context.Background()
-	// exporter, err := otlptrace.New(
-	// 	ctx,
-	// 	otlptracegrpc.NewClient(
-	// 		secureOption,
-	// 		otlptracegrpc.WithEndpoint(collectorURL),
+	// // Record information about this application in a Resource.
+	// res, _ := resource.Merge(
+	// 	resource.Default(),
+	// 	resource.NewWithAttributes(
+	// 		semconv.SchemaURL,
+	// 		semconv.ServiceNameKey.String(serviceName),
+	// 		// semconv.ServiceVersionKey.String("v0.1.0"),
+	// 		// attribute.String("environment", "test"),
 	// 	),
 	// )
 
-	// resource := resource.NewWithAttributes(
-	// 	"example-service",
-	// 	attribute.String("service.name", serviceName),
-	// 	attribute.String("library.language", "go"),
-	// 	hostnameKeyValue(),
-	// )
+	serviceName := conf.ServerName
+	SamplerRate := conf.SamplerParam
+	insecure := conf.Insecure
+	collectorURL := conf.ReporterLocalAgentHostPort
+
+	var secureOption otlptracegrpc.Option
+
+	if strings.ToLower(insecure) == "false" || insecure == "0" || strings.ToLower(insecure) == "f" {
+		secureOption = otlptracegrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
+	} else {
+		secureOption = otlptracegrpc.WithInsecure()
+	}
+
+	ctx := context.Background()
+	exporter, err := otlptrace.New(
+		ctx,
+		otlptracegrpc.NewClient(
+			secureOption,
+			otlptracegrpc.WithEndpoint(collectorURL),
+		),
+	)
+
+	res := resource.NewWithAttributes(
+		"example-service",
+		attribute.String("service.name", serviceName),
+		attribute.String("library.language", "go"),
+		hostnameKeyValue(),
+	)
 
 	if err != nil {
 		log.Printf("初始化  TracerProvider 失败 err:%s", err)
