@@ -50,7 +50,7 @@ func New(conf Config) (tracer opentracing.Tracer, closer io.Closer) {
 	return tracer, closer
 }
 
-// Deprecated
+// NewTracer Deprecated
 // 请使用 xtrace.New()
 // NewTracer 使用配置信息初始化Jaeger Tracer，如果初始化失败会返回NoopTracer，避免出现空指针
 func NewTracer(conf Config) (tracer opentracing.Tracer, closer io.Closer) {

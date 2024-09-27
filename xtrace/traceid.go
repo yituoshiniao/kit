@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/opentracing/opentracing-go"
-	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/utils"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -55,13 +55,13 @@ func (t TraceId) IsValid() bool {
 
 // TraceIdFromContext 从context中获取TraceId
 func TraceIdFromContext(ctx context.Context) (traceId string) {
-	span := opentracing.SpanFromContext(ctx)
-	if span != nil {
-		if spanContext, ok := span.Context().(jaeger.SpanContext); ok {
-			return spanContext.TraceID().String()
-		}
+	span := trace.SpanFromContext(ctx)
+	// 检查是否存在有效 Span
+	if !span.SpanContext().IsValid() {
+		return ""
 	}
-	return ""
+	// 返回 TraceID
+	return span.SpanContext().TraceID().String()
 }
 
 func NewCtxWithTraceId(ctx context.Context) context.Context {
@@ -69,7 +69,9 @@ func NewCtxWithTraceId(ctx context.Context) context.Context {
 	if traceId != "" {
 		return ctx
 	}
-	_, ctx = opentracing.StartSpanFromContext(ctx, "NewCtxWithTraceId")
+
+	tracer := otel.Tracer("NewCtxWithTraceId")
+	ctx, _ = tracer.Start(context.Background(), "parent-operation")
 	return ctx
 }
 
@@ -87,11 +89,7 @@ func WithSubTraceId(ctx context.Context) context.Context {
 	return metadata.NewIncomingContext(ctx, md)
 }
 
-// 获取ctx中的traceID
+// GetTraceID 获取ctx中的traceID
 func GetTraceID(ctx context.Context) (traceID string) {
-	span := opentracing.SpanFromContext(ctx)
-	if span != nil {
-		traceID = span.Context().(jaeger.SpanContext).TraceID().String()
-	}
-	return traceID
+	return TraceIdFromContext(ctx)
 }

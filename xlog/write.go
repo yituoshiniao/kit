@@ -3,33 +3,27 @@ package xlog
 import (
 	"context"
 	"encoding/json"
+	"runtime"
+	"strconv"
+	"strings"
+
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/yituoshiniao/kit/xtrace"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"runtime"
-	"strconv"
-	"strings"
 )
 
 const (
-	//LogField 日志字段
+	// LogField 日志字段
 	LogField = "xlog"
-	//MethodPath 请求方法
+	// MethodPath 请求方法
 	MethodPath = "method_path"
-	//TimeMs 请求时间 单位毫秒
+	// TimeMs 请求时间 单位毫秒
 	TimeMs = "timeMs"
 )
 
 func S(ctx context.Context) *zap.SugaredLogger {
 	return zap.L().With(ExtFields(ctx)...).Sugar()
-}
-
-// SE  S扩展
-func SE(ctx context.Context, tmpFs []zap.Field) *zap.SugaredLogger {
-	//fs := ExtFields(ctx)
-	//fs = append(tmpFs, fs...)
-	return zap.L().With(append(tmpFs, ExtFields(ctx)...)...).Sugar()
 }
 
 // LE L扩展
@@ -74,6 +68,7 @@ func ExtFieldsNotNamespace(ctx context.Context) (fs []zap.Field) {
 
 // TraceIdField 写入 taceId 到日志组件中
 func TraceIdField(ctx context.Context) (f zap.Field) {
+
 	if id := xtrace.TraceIdFromContext(ctx); id != "" {
 		return zap.String("traceId", xtrace.TraceIdFromContext(ctx))
 	}
