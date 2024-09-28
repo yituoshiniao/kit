@@ -106,8 +106,8 @@ func NewTracerProvider(conf OtelConfig) (*sdktrace.TracerProvider, error) {
 	// 设置追踪提供者（Tracer Provider）
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
-		sdktrace.WithSampler(sdktrace.AlwaysSample()), // 采样率配置,全部
-		sdktrace.WithSampler(sdktrace.NeverSample()),  // 采样率配置,全部不采样
+		// sdktrace.WithSampler(sdktrace.AlwaysSample()), // 采样率配置,全部
+		// sdktrace.WithSampler(sdktrace.NeverSample()),  // 采样率配置,全部不采样
 
 		// 头部采样, 根据parent span来决定是否被采样
 		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(SamplerRate))),
