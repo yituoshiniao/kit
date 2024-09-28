@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/opentracing/opentracing-go"
 	"github.com/urfave/negroni"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/status"
@@ -46,7 +45,7 @@ type MiddlewareFactory func(o *Options) *negroni.Negroni
 
 func defaultMiddlewareFactory(o *Options) *negroni.Negroni {
 	middleware := negroni.New()
-	middleware.Use(NewOpentracingMiddleware())
+	middleware.Use(NewOTelMiddleware())
 	middleware.Use(NewTraceIdMiddleware())
 	middleware.Use(NewLogMiddleware())
 	middleware.Use(NewRecoveryMiddleware(o.ErrFactory))
@@ -74,16 +73,9 @@ type Options struct {
 	IdleTimeout       time.Duration
 }
 
-// Deprecated
+// WithLogger Deprecated
 // 不再需要，调用的地方直接使用 zap.L()
 func WithLogger(_ *zap.Logger) Option {
-	return func(o *Options) {
-	}
-}
-
-// Deprecated
-// 不再需要，调用的地方直接使用 opentracing.GlobalTracer()
-func WithTracer(_ opentracing.Tracer) Option {
 	return func(o *Options) {
 	}
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/onsi/gomega/gbytes"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -30,9 +31,12 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 	var respBody []byte
 	atomic.AddInt64(&t.N, 1)
 
+	xlog.S(req.Context()).Infow("RoundTrip-信息", "startTime", startTime)
 	// 从上下文中创建 Span
 	ctx, span := t.tracer.Start(req.Context(), t.serverName)
 	defer span.End()
+	// 注入当前 Span 的上下文到 HTTP 请求头中
+	t.propagator.Inject(ctx, propagation.HeaderCarrier(req.Header))
 
 	// 更新请求上下文
 	req = req.WithContext(ctx)

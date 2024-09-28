@@ -23,7 +23,9 @@ func NewTracerProvider(conf OtelConfig) (*sdktrace.TracerProvider, error) {
 	// )
 
 	// 创建 Jaeger exporter
-	ep := "http://localhost:14268/api/traces"
+	// ep := "http://localhost:14268/api/traces"
+	ep := conf.ReporterLocalAgentHostPort
+
 	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(ep)))
 
 	serviceName := conf.ServerName

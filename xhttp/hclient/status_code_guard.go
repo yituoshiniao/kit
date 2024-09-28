@@ -23,7 +23,7 @@ type StatusCodeGuardDoer struct {
 	doer sling.Doer
 }
 
-// 判断http-code是否正常
+// Do 判断http-code是否正常
 func (t StatusCodeGuardDoer) Do(req *http.Request) (resp *http.Response, err error) {
 	resp, err = t.doer.Do(req)
 

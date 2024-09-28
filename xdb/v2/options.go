@@ -34,7 +34,7 @@ type options struct {
 	// rawOpName defines operation name for "raw" span
 	rawOpName operationName
 
-	//是否记录 度量指标
+	// 是否记录 度量指标
 	metrics bool
 }
 
@@ -59,17 +59,6 @@ type ApplyOption func(o *options)
 func WithLogResult(logResult bool) ApplyOption {
 	return func(o *options) {
 		o.logResult = logResult
-	}
-}
-
-// WithTracer allows to use customized tracer rather than the global one only.
-func WithTracer(tracer opentracing.Tracer) ApplyOption {
-	return func(o *options) {
-		if tracer == nil {
-			return
-		}
-
-		o.tracer = tracer
 	}
 }
 

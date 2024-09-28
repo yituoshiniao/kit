@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// otel.Tracer中的redis-client 设置的是 otel.library.name
 var tracer = otel.Tracer("redis-client") // Initialize your tracer
 
 // Trace 为redis.client 增加 trace 功能 ，返回 cloned client.

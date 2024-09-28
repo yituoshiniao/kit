@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -13,6 +14,7 @@ type Transport struct {
 	rt         http.RoundTripper // next round-tripper or http.DefaultTransport if nil
 	serverName string
 	tracer     trace.Tracer
+	propagator propagation.TextMapPropagator
 }
 
 var serverName = ""
@@ -32,9 +34,12 @@ func New(opts ...Option) *Transport {
 	// 获取 Tracer 实例
 	tracer := otel.Tracer(serverName)
 
+	propagator := otel.GetTextMapPropagator()
+
 	// var transport RoundTripper
 	transport := &Transport{
-		tracer: tracer,
+		tracer:     tracer,
+		propagator: propagator,
 	}
 	transport.serverName = serverName
 	if transport.serverName == "" {

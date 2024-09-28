@@ -7,12 +7,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-// jsonDecoder decodes http response JSON into a JSON-tagged struct value.
+// JsonDecoder decodes http response JSON into a JSON-tagged struct value.
 type JsonDecoder struct {
 	logicCodeGuard bool
 }
 
-// 验证 返回code是正常
+// Decode 验证 返回code是正常
 // Decode decodes the Response Body into the value pointed to by v.
 // Caller must provide a non-nil v and close the resp.Body.
 func (d JsonDecoder) Decode(resp *http.Response, v interface{}) error {

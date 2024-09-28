@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -29,7 +28,6 @@ type options struct {
 	timeout         time.Duration
 	statusCodeGuard bool
 	logicCodeGuard  bool
-	tracer          opentracing.Tracer
 	logger          *zap.Logger
 	durationFunc    DurationToField
 	tlsConfig       *tls.Config

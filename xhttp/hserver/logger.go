@@ -22,7 +22,7 @@ var (
 type LogMiddleware struct {
 }
 
-// NewLogger returns a new LogMiddleware instance
+// NewLogMiddleware returns a new LogMiddleware instance
 func NewLogMiddleware() *LogMiddleware {
 	return &LogMiddleware{}
 }

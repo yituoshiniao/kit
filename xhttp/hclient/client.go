@@ -33,6 +33,8 @@ func New(opts ...Option) *sling.Sling {
 		propagator:    otel.GetTextMapPropagator(),
 	}
 
+	// otel.GetTextMapPropagator().Inject()
+
 	if o.metrics {
 		doer = MetricsDoer{doer: doer}
 	}

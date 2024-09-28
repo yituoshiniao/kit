@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -29,7 +28,6 @@ type options struct {
 	timeout         time.Duration
 	statusCodeGuard bool
 	logicCodeGuard  bool
-	tracer          opentracing.Tracer
 	logger          *zap.Logger
 	durationFunc    DurationToField
 	tlsConfig       *tls.Config
@@ -88,15 +86,7 @@ func WithMetrics(isMetrics bool) Option {
 	}
 }
 
-// Deprecated
-// 不再需要，调用的地方直接使用 opentracing.GlobalTracer()
-func WithTracer(tracer opentracing.Tracer) Option {
-	return func(o *options) {
-		o.tracer = tracer
-	}
-}
-
-// Deprecated
+// WithLogger Deprecated
 // 不再需要，调用的地方直接使用 zap.L()
 func WithLogger(logger *zap.Logger) Option {
 	return func(o *options) {
