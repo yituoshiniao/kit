@@ -17,4 +17,5 @@
 .idea
 go.sum
 cmd
+replace_mod.sh
 
